@@ -3,117 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Crypto & Cash Tycoon</title>
-    <!-- Подключаем обновленные стили -->
+    <title>Crypto Tycoon & Labor Market</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Подключаем официальный скрипт Telegram Mini Apps -->
     <script src="https://telegram.org"></script>
 </head>
 <body>
     <div class="game-container">
-        <!-- ШАПКА ИГРЫ С ПРЕМИУМ-БАЛАНСОМ -->
+        <!-- ПРЕМИУМ-ШАПКА С ДВУМЯ БАЛАНСАМИ -->
         <div class="header">
-            <h1 id="balance-title">Ваш капитал</h1>
-            <div id="balance">0.0</div>
-            <div class="stat">⚡ Доход: <span id="passive-income">+0.0</span>/сек</div>
+            <div class="balance-row">
+                <div class="balance-block">
+                    <span class="label">Баланс BTC</span>
+                    <span id="balance-btc">0.0000</span>
+                </div>
+                <div class="balance-block">
+                    <span class="label">Баланс USD</span>
+                    <span id="balance-usd">0.0</span>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-item">⛏️ +<span id="passive-btc">0.0</span> BTC/с</div>
+                <div class="stat-item">💵 +<span id="passive-usd">0.0</span> $/с</div>
+            </div>
         </div>
 
-        <!-- ВКЛАДКА 1: ИГРОВАЯ ЗОНА -->
+        <!-- ВКЛАДКА 1: КЛИКЕР -->
         <div id="tab-game" class="tab-content active">
-            
-            <!-- ПЕРЕКЛЮЧАТЕЛЬ ЗНАЧИМОСТИ (КРИПТА / ВАЛЮТА) -->
             <div class="currency-selector">
-                <button class="selector-btn active" id="select-btc" onclick="changeCurrency('btc')">🪙 Bitcoin (BTC)</button>
-                <button class="selector-btn" id="select-usd" onclick="changeCurrency('usd')">💵 Dollar ($)</button>
+                <button class="selector-btn active" id="select-btc" onclick="changeCurrency('btc')">🪙 Добывать BTC</button>
+                <button class="selector-btn" id="select-usd" onclick="changeCurrency('usd')">💵 Зарабатывать $</button>
             </div>
 
-            <!-- ГЛАВНАЯ ЗОНА КЛИКА С КРАСИВЫМ НЕОНОВЫМ ДИСКОМ -->
             <div class="click-area" id="click-area-container">
                 <button id="click-btn">🪙</button>
             </div>
 
-            <!-- ЗОНА АЗАРТА (КАЗИНО VIP) -->
+            <!-- КАЗИНО VIP -->
             <div class="casino-section">
                 <h2>🎰 VIP Зона Риска (Шанс 60%)</h2>
                 <div class="casino-card">
-                    <p id="casino-result">Сделайте элитную ставку</p>
+                    <p id="casino-result">Сделайте элитную ставку в $</p>
                     <div class="bet-buttons">
-                        <button class="bet-btn" onclick="playCasino(10)">🎲 10</button>
-                        <button class="bet-btn" onclick="playCasino(100)">🎲 100</button>
-                        <button class="bet-btn" onclick="playCasino(500)">🎲 500</button>
+                        <button class="bet-btn" onclick="playCasino(10)">🎲 $10</button>
+                        <button class="bet-btn" onclick="playCasino(100)">🎲 $100</button>
+                        <button class="bet-btn" onclick="playCasino(500)">🎲 $500</button>
                     </div>
                 </div>
             </div>
 
-            <!-- ИМПЕРИЯ ЗАРАБОТКА (УЛУЧШЕНИЯ) -->
+            <!-- БИЗНЕС-ИМПЕРИЯ -->
             <div class="upgrades-section">
-                <h2>💼 Источники пассивного дохода</h2>
+                <h2>💼 Инвестиции и Предприятия</h2>
                 
                 <div class="upgrade-card" id="upgrade-1">
                     <div class="icon-box">🎯</div>
                     <div class="info">
                         <h3>Бизнес-клик</h3>
-                        <p>Доход: +0.1/сек | Цена: <span class="cost">100</span></p>
+                        <p>Доход: +0.1 $/сек | Цена: <span class="cost">100</span> $</p>
                     </div>
-                    <button class="buy-btn" onclick="buyUpgrade(1)">Инвестировать</button>
+                    <button class="buy-btn" onclick="buyUpgrade(1)">Купить</button>
                 </div>
 
                 <div class="upgrade-card" id="upgrade-2">
                     <div class="icon-box">⚡</div>
                     <div class="info">
                         <h3>Крипто-ферма</h3>
-                        <p>Доход: +0.5/сек | Цена: <span class="cost">500</span></p>
+                        <p>Доход: +0.0005 BTC/сек | Цена: <span class="cost">500</span> $</p>
                     </div>
-                    <button class="buy-btn" onclick="buyUpgrade(2)">Инвестировать</button>
+                    <button class="buy-btn" onclick="buyUpgrade(2)">Купить</button>
                 </div>
 
                 <div class="upgrade-card" id="upgrade-3">
-                    <div class="icon-box">📈</div>
-                    <div class="info">
-                        <h3>Торговый ИИ-бот</h3>
-                        <p>Доход: +2.0/сек | Цена: <span class="cost">2000</span></p>
-                    </div>
-                    <button class="buy-btn" onclick="buyUpgrade(3)">Инвестировать</button>
-                </div>
-
-                <div class="upgrade-card" id="upgrade-4">
-                    <div class="icon-box">🏢</div>
-                    <div class="info">
-                        <h3>IT-Корпорация</h3>
-                        <p>Доход: +10.0/сек | Цена: <span class="cost">12000</span></p>
-                    </div>
-                    <button class="buy-btn" onclick="buyUpgrade(4)">Инвестировать</button>
-                </div>
-
-                <div class="upgrade-card" id="upgrade-5">
                     <div class="icon-box">🏛️</div>
                     <div class="info">
                         <h3>Банковская сеть</h3>
-                        <p>Доход: +50.0/сек | Цена: <span class="cost">75000</span></p>
+                        <p>Доход: +50.0 $/сек | Цена: <span class="cost">1.5</span> BTC</p>
                     </div>
-                    <button class="buy-btn" onclick="buyUpgrade(5)">Инвестировать</button>
+                    <button class="buy-btn" onclick="buyUpgrade(3)">Купить</button>
                 </div>
             </div>
         </div>
 
-        <!-- ВКЛАДКА 2: МИРОВОЙ РЕЙТИНГ -->
+        <!-- ВКЛАДКА 2: ОБМЕННИК -->
+        <div id="tab-exchange" class="tab-content">
+            <div class="exchange-section">
+                <h2>📈 Живая Крипто-Биржа</h2>
+                <div class="ticker-card">
+                    <span class="ticker-label">Текущий курс Bitcoin:</span>
+                    <div id="live-rate">$50,000</div>
+                    <span class="ticker-sub">1 игровой год = 1 реальный месяц</span>
+                </div>
+                <div class="exchange-form">
+                    <div class="input-group">
+                        <label>Сумма в BTC для операции:</label>
+                        <input type="number" id="exchange-amount" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="exchange-actions">
+                        <button class="action-btn buy" onclick="tradeCrypto('buy')">Купить BTC за $</button>
+                        <button class="action-btn sell" onclick="tradeCrypto('sell')">Продать BTC за $</button>
+                    </div>
+                    <p id="exchange-status">Введите сумму для сделки</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 3: БИРЖА ТРУДА -->
+        <div id="tab-labor" class="tab-content">
+            <div class="labor-section">
+                <h2>💼 Биржа Труда (Контракты)</h2>
+                <div class="contract-card">
+                    <div class="contract-header">
+                        <h3>Менеджер корпорации</h3>
+                        <span class="badge">VIP</span>
+                    </div>
+                    <p class="contract-desc">Условия: 1 час работы в сутки. Ваши ручные клики в режиме доллара приносят <strong>в 5 раз больше ($5 вместо $1)</strong>!</p>
+                    <div class="contract-status">
+                        <span id="labor-timer-text">Статус: Доступен к набору</span>
+                    </div>
+                    <button id="start-labor-btn" class="labor-action-btn" onclick="startLaborShift()">Начать рабочую смену</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 4: РЕЙТИНГ -->
         <div id="tab-leaderboard" class="tab-content">
             <div class="leaderboard-section">
-                <h2>🏆 Мировая элита (Топ-500)</h2>
-                <div id="leaderboard-list" class="leaderboard-list">
-                    <!-- Заполняется динамически -->
-                </div>
+                <h2>🏆 Мировая Элита (Топ в $)</h2>
+                <div id="leaderboard-list" class="leaderboard-list"></div>
             </div>
         </div>
 
-        <!-- РОСКОШНЫЙ ТАБ-БАР НАВИГАЦИИ -->
+        <!-- ТАБ-БАР НАВИГАЦИИ -->
         <div class="nav-bar">
-            <button class="nav-btn active" id="btn-nav-game" onclick="switchTab('game')">🎮 Майнинг</button>
-            <button class="nav-btn" id="btn-nav-leaderboard" onclick="switchTab('leaderboard')">🏆 Топ-500</button>
+            <button class="nav-btn active" id="btn-nav-game" onclick="switchTab('game')">🎮 Игра</button>
+            <button class="nav-btn" id="btn-nav-exchange" onclick="switchTab('exchange')">📈 Биржа</button>
+            <button class="nav-btn" id="btn-nav-labor" onclick="switchTab('labor')">💼 Труд</button>
+            <button class="nav-btn" id="btn-nav-leaderboard" onclick="switchTab('leaderboard')">🏆 Топ</button>
         </div>
     </div>
 
-    <!-- Подключаем обновленную логику -->
     <script src="app.js"></script>
 </body>
 </html>

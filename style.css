@@ -1,0 +1,366 @@
+/* Роскошный темный футуристичный стиль */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: radial-gradient(circle at top, #1c1c2e 0%, #0d0d13 100%);
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 440px;
+    padding: 30px 20px 100px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ШАПКА КЛИКЕРА С НЕОНОВЫМ СВЕЧЕНИЕМ */
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.header h1 {
+    font-size: 0.9rem;
+    color: #a0a0b0;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+#balance {
+    font-size: 2.6rem;
+    font-weight: 800;
+    margin: 8px 0;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.stat {
+    font-size: 1rem;
+    color: #00ff88;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+}
+
+/* ВКЛАДКИ */
+.tab-content {
+    display: none;
+    width: 100%;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* СЕЛЕКТОР ВАЛЮТЫ */
+.currency-selector {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.selector-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.selector-btn.active {
+    background: linear-gradient(135deg, #ffd700 0%, #ff8800 100%);
+    color: #000;
+    border: none;
+    box-shadow: 0 0 15px rgba(255, 136, 0, 0.4);
+}
+
+/* ЗОНА КЛИКА И ПУЛЬСИРУЮЩАЯ МОНЕТА */
+.click-area {
+    margin: 20px 0 35px 0;
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#click-btn {
+    background: radial-gradient(circle, rgba(255,215,0,0.15) 0%, rgba(0,0,0,0) 70%);
+    border: none;
+    font-size: 8.5rem;
+    cursor: pointer;
+    outline: none;
+    border-radius: 50%;
+    width: 180px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: coinPulse 3s infinite ease-in-out;
+    transition: transform 0.05s ease;
+}
+
+#click-btn:active {
+    transform: scale(0.90);
+}
+
+@keyframes coinPulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255,215,0,0.3)); }
+    50% { transform: scale(1.04); filter: drop-shadow(0 0 30px rgba(255,136,0,0.5)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255,215,0,0.3)); }
+}
+
+/* ЭФФЕКТ ВЗЛЕТАЮЩИХ ЦИФР */
+.floating-number {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow: 0 0 8px #000;
+    animation: floatUp 0.8s forwards ease-out;
+    z-index: 10;
+}
+
+@keyframes floatUp {
+    0% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) translateY(-120px) scale(0.8); opacity: 0; }
+}
+
+/* КАЗИНО VIP */
+.casino-section {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.casino-section h2 {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    color: #ffd700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.casino-card {
+    background: linear-gradient(135deg, rgba(40,20,20,0.4) 0%, rgba(20,20,30,0.4) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 16px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: inset 0 0 15px rgba(255,215,0,0.05);
+}
+
+#casino-result {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #ddd;
+}
+
+.bet-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.bet-btn {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px 5px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bet-btn:active {
+    background: rgba(255,255,255,0.15);
+    transform: scale(0.95);
+}
+
+/* КАРТОЧКИ ИНВЕСТИЦИЙ */
+.upgrades-section {
+    width: 100%;
+}
+
+.upgrades-section h2 {
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    color: #a0a0b0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.upgrade-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    backdrop-filter: blur(5px);
+    transition: background 0.3s;
+}
+
+.upgrade-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.icon-box {
+    font-size: 1.8rem;
+    background: rgba(255,255,255,0.04);
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.upgrade-card .info {
+    flex: 1;
+}
+
+.upgrade-card .info h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.upgrade-card .info p {
+    font-size: 0.8rem;
+    color: #8a8a9a;
+}
+
+.buy-btn {
+    background: linear-gradient(135deg, #00ff88 0%, #00b361 100%);
+    color: #000;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
+}
+
+.buy-btn:active {
+    transform: scale(0.96);
+}
+
+/* ТАБЛИЦА РЕЙТИНГА */
+.leaderboard-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #ffd700;
+}
+
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.leader-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+}
+
+.leader-rank {
+    font-size: 1.1rem;
+    font-weight: bold;
+    width: 35px;
+}
+
+.leader-name {
+    flex: 1;
+    font-weight: 600;
+    color: #ddd;
+}
+
+.leader-score {
+    font-weight: 800;
+    color: #ffd700;
+}
+
+.leader-item.current-player {
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: linear-gradient(90deg, rgba(255,215,0,0.08) 0%, rgba(0,0,0,0) 100%);
+}
+
+.leader-item.current-player .leader-name {
+    color: #ffd700;
+}
+
+/* НАВИГАЦИОННАЯ ПАНЕЛЬ */
+.nav-bar {
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 30px);
+    max-width: 410px;
+    background: rgba(15, 15, 25, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 8px;
+    display: flex;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    z-index: 100;
+}
+
+.nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #6a6a7a;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 15px;
+    transition: all 0.3s;
+}
+
+.nav-btn.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+}

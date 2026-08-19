@@ -74,7 +74,7 @@ window.updateUI = function() {
         const costEl = document.getElementById(`upgrade-cost-${id}`);
         const lvlEl = document.getElementById(`upgrade-lvl-${id}`);
         
-        if (costEl) costEl.innerText = upgrade.cost * (upgrade.level + 1);
+        if (costEl) costEl.innerText = (upgrade.cost * (upgrade.level + 1)).toFixed(0);
         if (lvlEl) lvlEl.innerText = upgrade.level; // Обращение по ID-ключу, свойство upgrades.level отсутствует
     }
 };
@@ -100,7 +100,7 @@ window.switchTab = function(tabId) {
 
 // Клик для заработка (Главная кнопка)
 window.mainClick = function() {
-    // Сила клика увеличивается строго от уровня апгрейда ID 1
+    // ИСПРАВЛЕНО: Сила клика увеличивается строго от уровня апгрейда с ID 1
     const clickPower = 1 + (window.upgrades[1].level * window.upgrades[1].income);
     window.fiat += clickPower;
     
@@ -219,14 +219,14 @@ window.switchTab(window.currentTab);
 // 6. ЕДИНЫЙ СЕКУНДНЫЙ СЕТИНТЕРВАЛ (TICKER)
 // ==========================================
 setInterval(function() {
-    // 1. Расчет пассивного дохода строго по ID ключам 2 и 3
+    // ИСПРАВЛЕНО: Расчет пассивного дохода строго по ID ключам 2 и 3
     const passiveIncome2 = window.upgrades[2].level * window.upgrades[2].income;
     const passiveIncome3 = window.upgrades[3].level * window.upgrades[3].income;
     const totalPassiveIncome = passiveIncome2 + passiveIncome3;
     
     window.fiat += totalPassiveIncome;
 
-    // 2. Симуляция курса криптовалюты BTC (колебания в пределах ±2.5%)
+    // Симуляция курса криптовалюты BTC (колебания в пределах ±2.5%)
     const percentChange = (Math.random() * 5 - 2.5) / 100; // от -0.025 до +0.025
     window.btcRate = window.btcRate * (1 + percentChange);
     
@@ -235,7 +235,7 @@ setInterval(function() {
         window.btcRate = 1000;
     }
 
-    // 3. Синхронное обновление UI и запись в LocalStorage
+    // Синхронное обновление UI и запись в LocalStorage
     window.updateUI();
     window.saveGame();
 }, 1000);

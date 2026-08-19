@@ -13,14 +13,24 @@ let isLaborActive = localStorage.getItem('clicker_isLaborActive') === 'true';
 let laborEndTime = parseInt(localStorage.getItem('clicker_laborEndTime')) || 0;
 let nextLaborAvailableTime = parseInt(localStorage.getItem('clicker_nextLaborAvailableTime')) || 0;
 
-// Конфигурация улучшений (Цены подгружаются из памяти, чтобы прогресс не терялся)
+// Конфигурация улучшений по уровням
 const upgrades = {
-    1: { name: 'Бизнес-клик', cost: parseInt(localStorage.getItem('upg_cost_1')) || 100, currency: 'usd', incomeUSD: 0.1, incomeBTC: 0 },
-    2: { name: 'Крипто-ферма', cost: parseInt(localStorage.getItem('upg_cost_2')) || 500, currency: 'usd', incomeUSD: 0, incomeBTC: 0.0005 },
-    3: { name: 'Банковская сеть', cost: parseFloat(localStorage.getItem('upg_cost_3')) || 1.5, currency: 'btc', incomeUSD: 50.0, incomeBTC: 0 }
+    1: { name: 'Бизнес-клик', level: parseInt(localStorage.getItem('upg_level_1')) || 0, baseCost: 100, currency: 'usd', incomeUSD: 0.1, incomeBTC: 0 },
+    2: { name: 'Крипто-ферма', level: parseInt(localStorage.getItem('upg_level_2')) || 0, baseCost: 500, currency: 'usd', incomeUSD: 0, incomeBTC: 0.0005 },
+    3: { name: 'Банковская сеть', level: parseInt(localStorage.getItem('upg_level_3')) || 0, baseCost: 1.5, currency: 'btc', incomeUSD: 50.0, incomeBTC: 0 }
 };
 
-// Базовый список рефералов для демонстрации механики (сохраняется в памяти)
+// Расчет цены улучшения на основе его текущего уровня
+function getUpgradeCost(id) {
+    const upg = upgrades[id];
+    if (upg.currency === 'usd') {
+        return Math.ceil(upg.baseCost * Math.pow(1.5, upg.level));
+    } else {
+        return parseFloat((upg.baseCost * Math.pow(1.5, upg.level)).toFixed(4));
+    }
+}
+
+// Базовый список рефералов
 let defaultReferrals = [
     { id: 101, username: "Ivan_Crypto", clicksToday: 52, daysActive: 3, status: "Проверен", bonusPaid: true },
     { id: 102, username: "Masha_AMG", clicksToday: 15, daysActive: 1, status: "В процессе (1/3 дн)", bonusPaid: false },
@@ -29,7 +39,7 @@ let defaultReferrals = [
 
 let referrals = JSON.parse(localStorage.getItem('clicker_referrals')) || defaultReferrals;
 
-// Виртуальные лидеры для Топ-500
+// Виртуальные лидеры Топ-500
 let leaders = [
     { username: "Pavel_Durov", btc: 2, usd: 500000 },
     { username: "Crypto_Sheikh", btc: 5, usd: 200000 },
@@ -54,7 +64,7 @@ const leaderboardList = document.getElementById('leaderboard-list');
 const referralsList = document.getElementById('referrals-list');
 const inviteCopyStatus = document.getElementById('invite-copy-status');
 
-// Инициализация TG WebApp
+// Инициализация Telegram WebApp
 if (window.Telegram && window.Telegram.WebApp) {
     const tg = window.Telegram.WebApp;
     tg.ready(); tg.expand();
@@ -71,23 +81,19 @@ function saveGameData() {
     localStorage.setItem('clicker_laborEndTime', laborEndTime);
     localStorage.setItem('clicker_nextLaborAvailableTime', nextLaborAvailableTime);
     localStorage.setItem('clicker_referrals', JSON.stringify(referrals));
-    localStorage.setItem('upg_cost_1', upgrades[1].cost);
-    localStorage.setItem('upg_cost_2', upgrades[2].cost);
-    localStorage.setItem('upg_cost_3', upgrades[3].cost);
+    localStorage.setItem('upg_level_1', upgrades[1].level);
+    localStorage.setItem('upg_level_2', upgrades[2].level);
+    localStorage.setItem('upg_level_3', upgrades[3].level);
 }
 
-// Расчет пассивного дохода на основе купленных бизнесов
+// Расчет пассивного дохода на основе уровней улучшений
 function calculatePassiveIncomeRate() {
     passiveUSD = 0;
     passiveBTC = 0;
 
-    let level1 = Math.round(Math.log(upgrades[1].cost / 100) / Math.log(1.5));
-    let level2 = Math.round(Math.log(upgrades[2].cost / 500) / Math.log(1.5));
-    let level3 = Math.round(Math.log(upgrades[3].cost / 1.5) / Math.log(1.5));
-
-    if (level1 > 0) passiveUSD += level1 * upgrades[1].incomeUSD;
-    if (level2 > 0) passiveBTC += level2 * upgrades[2].incomeBTC;
-    if (level3 > 0) passiveUSD += level3 * upgrades[3].incomeUSD;
+    if (upgrades[1].level > 0) passiveUSD += upgrades[1].level * upgrades[1].incomeUSD;
+    if (upgrades[2].level > 0) passiveBTC += upgrades[2].level * upgrades[2].incomeBTC;
+    if (upgrades[3].level > 0) passiveUSD += upgrades[3].level * upgrades[3].incomeUSD;
 }
 
 // РАСЧЕТ МИРОВОГО КУРСА БИТКОИНА (50,000$ - 180,000$)
@@ -109,15 +115,17 @@ function calculateLiveRate() {
 // Переключение валюты клика
 function changeCurrency(type) {
     currentCurrency = type;
-    document.getElementById('select-btc').classList.remove('active');
-    document.getElementById('select-usd').classList.remove('active');
+    const selectBtc = document.getElementById('select-btc');
+    const selectUsd = document.getElementById('select-usd');
+    if (selectBtc) selectBtc.classList.remove('active');
+    if (selectUsd) selectUsd.classList.remove('active');
     
     if (type === 'btc') {
-        document.getElementById('select-btc').classList.add('active');
-        clickBtn.textContent = '🪙';
+        if (selectBtc) selectBtc.classList.add('active');
+        if (clickBtn) clickBtn.textContent = '🪙';
     } else {
-        document.getElementById('select-usd').classList.add('active');
-        clickBtn.textContent = '💵';
+        if (selectUsd) selectUsd.classList.add('active');
+        if (clickBtn) clickBtn.textContent = '💵';
     }
 }
 
@@ -136,12 +144,24 @@ function switchTab(tabName) {
     if (tabName === 'referrals') renderReferrals();
 }
 
-// Обновление цифр
+// Обновление цифр на экране
 function updateUI() {
     if (displayBTC) displayBTC.textContent = balanceBTC.toFixed(4);
     if (displayUSD) displayUSD.textContent = balanceUSD.toFixed(1);
     if (displayPassiveBTC) displayPassiveBTC.textContent = passiveBTC.toFixed(4);
     if (displayPassiveUSD) displayPassiveUSD.textContent = passiveUSD.toFixed(1);
+
+    // Динамическое обновление цен в UI карточек
+    for (let id in upgrades) {
+        const card = document.getElementById(`upgrade-${id}`);
+        if (card) {
+            const costEl = card.querySelector('.cost');
+            if (costEl) {
+                const currentCost = getUpgradeCost(id);
+                costEl.textContent = upgrades[id].currency === 'usd' ? currentCost : currentCost.toFixed(2);
+            }
+        }
+    }
 }
 
 // Обработка клика
@@ -182,18 +202,17 @@ function createFloatingText(e, textContent) {
     setTimeout(() => text.remove(), 800);
 }
 
-// Покупка улучшений
+// Покупка улучшений по уровням
 function buyUpgrade(id) {
     const upgrade = upgrades[id];
+    const currentCost = getUpgradeCost(id);
     
-    if (upgrade.currency === 'usd' && balanceUSD >= upgrade.cost) {
-        balanceUSD -= upgrade.cost;
-        upgrade.cost = Math.ceil(upgrade.cost * 1.5);
-        document.getElementById(`upgrade-${id}`).querySelector('.cost').textContent = upgrade.cost;
-    } else if (upgrade.currency === 'btc' && balanceBTC >= upgrade.cost) {
-        balanceBTC -= upgrade.cost;
-        upgrade.cost = (upgrade.cost * 1.5);
-        document.getElementById(`upgrade-${id}`).querySelector('.cost').textContent = upgrade.cost.toFixed(2);
+    if (upgrade.currency === 'usd' && balanceUSD >= currentCost) {
+        balanceUSD -= currentCost;
+        upgrade.level += 1;
+    } else if (upgrade.currency === 'btc' && balanceBTC >= currentCost) {
+        balanceBTC -= currentCost;
+        upgrade.level += 1;
     } else {
         alert('Недостаточно средств для этой инвестиции!');
         return;
@@ -231,21 +250,3 @@ function tradeCrypto(action) {
             exchangeStatus.textContent = `✅ Продано ${amount} BTC за $${Math.floor(totalCostUSD)}`;
             exchangeStatus.style.color = "#00ff88";
         } else {
-            exchangeStatus.textContent = "❌ Недостаточно BTC!";
-            exchangeStatus.style.color = "#ff5555";
-        }
-    }
-    exchangeAmountInput.value = "";
-    updateUI();
-    saveGameData();
-}
-
-// VIP СМЕНА НА БИРЖЕ ТРУДА
-function startLaborShift() {
-    const now = Date.now();
-    if (now < nextLaborAvailableTime) {
-        alert("Ваши сутки еще не прошли! Отдохните.");
-        return;
-    }
-
-    isLaborActive = true;

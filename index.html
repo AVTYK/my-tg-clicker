@@ -2,165 +2,145 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tycoon & Labor Market</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org"></script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="game-container">
-        <!-- ПРЕМИУМ-ШАПКА С ДВУМЯ БАЛАНСАМИ -->
-        <div class="header">
+        <!-- ДВОЙНАЯ ШАПКА БАЛАНСОВ -->
+        <header class="header">
             <div class="balance-row">
                 <div class="balance-block">
                     <span class="label">Баланс BTC</span>
-                    <span id="balance-btc">0.0000</span>
+                    <div id="balance-btc">0.0000 BTC</div>
                 </div>
                 <div class="balance-block">
                     <span class="label">Баланс USD</span>
-                    <span id="balance-usd">0.0</span>
+                    <div id="balance-usd">0.00 USD</div>
                 </div>
             </div>
             <div class="stats-row">
-                <div class="stat-item">⛏️ +<span id="passive-btc">0.0000</span> BTC/с</div>
-                <div class="stat-item">💵 +<span id="passive-usd">0.0</span> $/с</div>
+                <div class="stat-item">Доход: <span id="ui-pincome">0.00</span> USD/с</div>
+                <div class="stat-item">Клик: <span id="ui-cpower">1.00</span> USD</div>
             </div>
-        </div>
+        </header>
 
-        <!-- ВКЛАДКА 1: КЛИКЕР -->
-        <div id="tab-game" class="tab-content active">
-            <div class="currency-selector">
-                <button class="selector-btn active" id="select-btc" onclick="changeCurrency('btc')">🪙 Добывать BTC</button>
-                <button class="selector-btn" id="select-usd" onclick="changeCurrency('usd')">💵 Зарабатывать $</button>
-            </div>
-
-            <div class="click-area" id="click-area-container">
-                <button id="click-btn">🪙</button>
-            </div>
-
-            <!-- КАЗИНО VIP -->
-            <div class="casino-section">
-                <h2>🎰 VIP Зона Риска (Шанс 60%)</h2>
-                <div class="casino-card">
-                    <p id="casino-result">Сделайте элитную ставку в $</p>
-                    <div class="bet-buttons">
-                        <button class="bet-btn" onclick="playCasino(10)">🎲 $10</button>
-                        <button class="bet-btn" onclick="playCasino(100)">🎲 $100</button>
-                        <button class="bet-btn" onclick="playCasino(500)">🎲 $500</button>
-                    </div>
+        <!-- ВКЛАДКА 1: БИРЖА ТРУДА -->
+        <main id="tab-market" class="tab-content active">
+            <section class="labor-section">
+                <h2>Рынок Труда</h2>
+                <div class="currency-selector">
+                    <button id="curr-btn-USD" class="selector-btn active" onclick="window.changeCurrency('USD')">USD</button>
+                    <button id="curr-btn-EUR" class="selector-btn" onclick="window.changeCurrency('EUR')">EUR</button>
+                    <button id="curr-btn-RUB" class="selector-btn" onclick="window.changeCurrency('RUB')">RUB</button>
                 </div>
-            </div>
-
-            <!-- БИЗНЕС-ИМПЕРИЯ -->
-            <div class="upgrades-section">
-                <h2>💼 Инвестиции и Предприятия</h2>
                 
-                <div class="upgrade-card" id="upgrade-1">
-                    <div class="icon-box">🎯</div>
+                <div class="click-area">
+                    <button id="click-btn" onclick="window.startLaborShift()">💼</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- ВКЛАДКА 2: УЛУЧШЕНИЯ -->
+        <main id="tab-upgrades" class="tab-content">
+            <section class="upgrades-section">
+                <h2>Бизнес и Производство</h2>
+                
+                <!-- Улучшение 1 -->
+                <div class="upgrade-card">
+                    <div class="icon-box">🖱️</div>
                     <div class="info">
                         <h3>Бизнес-клик</h3>
-                        <p>Доход: +0.1 $/сек | Цена: <span class="cost">100</span> $</p>
+                        <p id="upgrade-level-1">Lvl 0</p>
                     </div>
-                    <button class="buy-btn" onclick="buyUpgrade(1)">Купить</button>
+                    <button class="buy-btn" onclick="window.buyUpgrade(1)">
+                        <span id="upgrade-price-1">10 USD</span>
+                    </button>
                 </div>
 
-                <div class="upgrade-card" id="upgrade-2">
+                <!-- Улучшение 2 -->
+                <div class="upgrade-card">
                     <div class="icon-box">⚡</div>
                     <div class="info">
                         <h3>Крипто-ферма</h3>
-                        <p>Доход: +0.0005 BTC/сек | Цена: <span class="cost">500</span> $</p>
+                        <p id="upgrade-level-2">Lvl 0</p>
                     </div>
-                    <button class="buy-btn" onclick="buyUpgrade(2)">Купить</button>
+                    <button class="buy-btn" onclick="window.buyUpgrade(2)">
+                        <span id="upgrade-price-2">100 USD</span>
+                    </button>
                 </div>
 
-                <div class="upgrade-card" id="upgrade-3">
-                    <div class="icon-box">🏛️</div>
+                <!-- Улучшение 3 -->
+                <div class="upgrade-card">
+                    <div class="icon-box">🏢</div>
                     <div class="info">
                         <h3>Банковская сеть</h3>
-                        <p>Доход: +50.0 $/сек | Цена: <span class="cost">1.5</span> BTC</p>
+                        <p id="upgrade-level-3">Lvl 0</p>
                     </div>
-                    <button class="buy-btn" onclick="buyUpgrade(3)">Купить</button>
+                    <button class="buy-btn" onclick="window.buyUpgrade(3)">
+                        <span id="upgrade-price-3">1000 USD</span>
+                    </button>
                 </div>
-            </div>
-        </div>
+            </section>
+        </main>
 
-        <!-- ВКЛАДКА 2: ОБМЕННИК -->
-        <div id="tab-exchange" class="tab-content">
-            <div class="exchange-section">
-                <h2>📈 Живая Крипто-Биржа</h2>
+        <!-- ВКЛАДКА 3: ТРЕЙДИНГ -->
+        <main id="tab-crypto" class="tab-content">
+            <section class="exchange-section">
+                <h2>Криптобиржа</h2>
                 <div class="ticker-card">
-                    <span class="ticker-label">Текущий курс Bitcoin:</span>
                     <div id="live-rate">$50,000</div>
-                    <span class="ticker-sub">1 игровой год = 1 реальный месяц</span>
-                </div>
-                <div class="exchange-form">
-                    <div class="input-group">
-                        <label>Сумма в BTC для операции:</label>
-                        <input type="number" id="exchange-amount" step="0.01" min="0" placeholder="0.00">
+                    <div class="ticker-sub">Текущий курс BTC/USD (Обновление каждую секунду)</div>
+                    
+                    <div class="exchange-form">
+                        <div class="exchange-actions">
+                            <button class="action-btn buy" onclick="window.tradeCrypto('buy')">Купить 0.01 BTC</button>
+                            <button class="action-btn sell" onclick="window.tradeCrypto('sell')">Продать 0.01 BTC</button>
+                        </div>
+                        <div id="exchange-status">Готов к торгам</div>
                     </div>
-                    <div class="exchange-actions">
-                        <button class="action-btn buy" onclick="tradeCrypto('buy')">Купить BTC за $</button>
-                        <button class="action-btn sell" onclick="tradeCrypto('sell')">Продать BTC за $</button>
-                    </div>
-                    <p id="exchange-status">Введите сумму для сделки</p>
                 </div>
-            </div>
-        </div>
+            </section>
+        </main>
 
-        <!-- ВКЛАДКА 3: БИРЖА ТРУДА -->
-        <div id="tab-labor" class="tab-content">
-            <div class="labor-section">
-                <h2>💼 Биржа Труда (Контракты)</h2>
-                <div class="contract-card">
-                    <div class="contract-header">
-                        <h3>Менеджер корпорации</h3>
-                        <span class="badge">VIP</span>
+        <!-- ВКЛАДКА 4: КАЗИНО -->
+        <main id="tab-casino" class="tab-content">
+            <section class="casino-section">
+                <h2>Казино "Удача Богача"</h2>
+                <div class="casino-card">
+                    <div id="casino-result">Сделайте вашу ставку</div>
+                    <div class="bet-buttons">
+                        <button class="bet-btn" onclick="window.playCasino(10)">10 USD</button>
+                        <button class="bet-btn" onclick="window.playCasino(50)">50 USD</button>
+                        <button class="bet-btn" onclick="window.playCasino(100)">100 USD</button>
                     </div>
-                    <p class="contract-desc">Условия: 1 час работы в сутки. Ваши ручные клики в режиме доллара приносят <strong>в 5 раз больше ($5 вместо $1)</strong>!</p>
-                    <div class="contract-status">
-                        <span id="labor-timer-text">Статус: Доступен к набору</span>
-                    </div>
-                    <button id="start-labor-btn" class="labor-action-btn" onclick="startLaborShift()">Начать рабочую смену</button>
                 </div>
-            </div>
-        </div>
+            </section>
+        </main>
 
-        <!-- ВКЛАДКА 4: РЕФЕРАЛЫ -->
-        <div id="tab-referrals" class="tab-content">
-            <div class="referrals-section">
-                <h2>👥 Реферальная Программа</h2>
+        <!-- ВКЛАДКА 5: РЕФЕРАЛЫ -->
+        <main id="tab-referrals" class="tab-content">
+            <section class="referrals-section">
+                <h2>Реферальная программа</h2>
                 <div class="referrals-promo-card">
-                    <h3>Приглашайте партнеров</h3>
-                    <p>За каждого друга, активного в игре <strong>не менее 3 дней</strong> (от 50 кликов в день), вы мгновенно получите бонус в размере <strong style="color: #00ff88;">$25,000</strong>!</p>
-                    <button class="invite-action-btn" onclick="copyInviteLink()">🔗 Скопировать ссылку приглашения</button>
-                    <p id="invite-copy-status" style="font-size: 0.85rem; margin-top: 8px; font-weight: bold; color: #888;"></p>
+                    <h3>Приглашайте друзей!</h3>
+                    <p>Получайте бонусы за каждого активного игрока, присоединившегося по вашей уникальной ссылке.</p>
+                    <button class="invite-action-btn" onclick="window.copyInviteLink()">Копировать реферальную ссылку</button>
                 </div>
-                
-                <h2 style="margin-top: 20px;">📋 Ваша команда партнеров</h2>
-                <div id="referrals-list" class="referrals-list">
-                    <!-- Заполняется из JS -->
-                </div>
-            </div>
-        </div>
-
-        <!-- ВКЛАДКА 5: РЕЙТИНГ -->
-        <div id="tab-leaderboard" class="tab-content">
-            <div class="leaderboard-section">
-                <h2>🏆 Мировая Элита (Топ в $)</h2>
-                <div id="leaderboard-list" class="leaderboard-list"></div>
-            </div>
-        </div>
+            </section>
+        </main>
 
         <!-- ТАБ-БАР НАВИГАЦИИ -->
-        <div class="nav-bar">
-            <button class="nav-btn active" id="btn-nav-game" onclick="switchTab('game')">🎮 Игра</button>
-            <button class="nav-btn" id="btn-nav-exchange" onclick="switchTab('exchange')">📈 Биржа</button>
-            <button class="nav-btn" id="btn-nav-labor" onclick="switchTab('labor')">💼 Труд</button>
-            <button class="nav-btn" id="btn-nav-referrals" onclick="switchTab('referrals')">👥 Друзья</button>
-            <button class="nav-btn" id="btn-nav-leaderboard" onclick="switchTab('leaderboard')">🏆 Топ</button>
-        </div>
+        <nav class="nav-bar">
+            <button id="nav-btn-market" class="nav-btn active" onclick="window.switchTab('tab-market')">Биржа</button>
+            <button id="nav-btn-upgrades" class="nav-btn" onclick="window.switchTab('tab-upgrades')">Апгрейды</button>
+            <button id="nav-btn-crypto" class="nav-btn" onclick="window.switchTab('tab-crypto')">Трейдинг</button>
+            <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
+            <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
+        </nav>
     </div>
 
-    <script src="app.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

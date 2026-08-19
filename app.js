@@ -6,7 +6,7 @@ let balanceBTC = parseFloat(localStorage.getItem('clicker_balanceBTC')) || 0;
 
 let passiveUSD = 0;
 let passiveBTC = 0;
-let currentCurrency = 'btc'; // 'btc' или 'usd'
+let currentCurrency = 'btc'; 
 let playerUsername = "Вы (Учитель)";
 
 // Переменные биржи труда (Смены)
@@ -231,7 +231,7 @@ window.tradeCrypto = function(actionType) {
         if (balanceBTC >= amount) {
             balanceBTC -= amount;
             balanceUSD += amount * currentBTCRate;
-            if (exchangeStatus) exchangeStatus.textContent = "Успешно продали " + amount + " BTC!";
+            if (exchangeStatus) exchangeStatus.textContent = "Продажа успешна! Получено $" + (amount * currentBTCRate).toFixed(2);
         } else {
             if (exchangeStatus) exchangeStatus.textContent = "Недостаточно BTC на балансе!";
         }

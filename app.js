@@ -109,29 +109,6 @@ window.createFloatingText = function(text) {
 // ==========================================
 // 4. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)
 // ==========================================
-window.switchTab = function(tabId) {
-    const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(function(tab) {
-        tab.classList.remove('active');
-    });
-    
-    const activeTab = document.getElementById(tabId);
-    if (activeTab) {
-        activeTab.classList.add('active');
-    }
-
-    const navButtons = document.querySelectorAll('.nav-btn');
-    navButtons.forEach(function(btn) {
-        btn.classList.remove('active');
-    });
-
-    const currentBtnId = 'nav-btn-' + tabId.replace('tab-', '');
-    const activeBtn = document.getElementById(currentBtnId);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-};
-
 window.changeCurrency = function(currencyCode) {
     if (window.gameState.currencyRates[currencyCode]) {
         window.gameState.selectedCurrency = currencyCode;
@@ -147,6 +124,7 @@ window.changeCurrency = function(currencyCode) {
         }
 
         window.updateUI();
+        window.saveGame(); // <-- СОХРАНЯЕМ ВЫБРАННУЮ ВАЛЮТУ
     }
 };
 
@@ -175,6 +153,7 @@ window.playCasino = function(betAmount) {
         }
     }
     window.updateUI();
+    window.saveGame(); // <-- СОХРАНЯЕМ БАЛАНС ПОСЛЕ КАЗИНО
 };
 
 window.buyUpgrade = function(upgradeId) {
@@ -187,6 +166,7 @@ window.buyUpgrade = function(upgradeId) {
         window.gameState.balance -= currentPrice;
         upgrade.level += 1;
         window.updateUI();
+        window.saveGame(); // <-- СОХРАНЯЕМ УРОВЕНЬ АПГРЕЙДА И БАЛАНС
     } else {
         alert("Недостаточно USD для покупки улучшения!");
     }
@@ -215,6 +195,7 @@ window.tradeCrypto = function(action) {
         }
     }
     window.updateUI();
+    window.saveGame(); // <-- СОХРАНЯЕМ ИЗМЕНЕНИЯ БАЛАНСОВ КРИПТЫ И ВАЛЮТЫ
 };
 
 window.startLaborShift = function() {
@@ -226,16 +207,9 @@ window.startLaborShift = function() {
     window.createFloatingText(displayText);
     
     window.updateUI();
+    window.saveGame(); // <-- СОХРАНЯЕМ БАЛАНС ПОСЛЕ КАЖДОГО КЛИКА
 };
 
-window.copyInviteLink = function() {
-    const dummyUrl = "https://t.me" + Math.floor(Math.random() * 899999 + 100000);
-    navigator.clipboard.writeText(dummyUrl).then(function() {
-        alert("Ссылка копирована: " + dummyUrl);
-    }).catch(function() {
-        alert("Ошибка копирования. Ссылка: " + dummyUrl);
-    });
-};
 
 // ==========================================
 // 5. ИНИЦИАЛИЗАЦИЯ И ИГРОВЫЕ ЦИКЛЫ (GAME TIMERS)
@@ -258,3 +232,48 @@ window.onload = function() {
         window.updateUI();
     }, 1000);
 };
+// ==========================================
+// СОХРАНЕНИЕ И ЗАГРУЗКА (LOCAL STORAGE)
+// ==========================================
+window.saveGame = function() {
+    const saveData = {
+        gameState: window.gameState,
+        // Сохраняем только уровни апгрейдов, чтобы не дублировать статику
+        upgrades: {
+            1: window.upgrades[1].level,
+            2: window.upgrades[2].level,
+            3: window.upgrades[3].level
+        }
+    };
+    localStorage.setItem('clicker_game_save', JSON.stringify(saveData));
+};
+
+window.loadGame = function() {
+    const rawData = localStorage.getItem('clicker_game_save');
+    if (!rawData) return;
+
+    try {
+        const savedData = JSON.parse(rawData);
+        
+        // Восстанавливаем состояние игры
+        if (savedData.gameState) {
+            window.gameState = Object.assign(window.gameState, savedData.gameState);
+        }
+        
+        // Восстанавливаем уровни апгрейдов по их ID ключам
+        if (savedData.upgrades) {
+            for (let id in savedData.upgrades) {
+                if (window.upgrades[id]) {
+                    window.upgrades[id].level = savedData.upgrades[id];
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Ошибка при загрузке сохранения:", e);
+    }
+};
+// === КОНЕЦ ВАШЕГО ФАЙЛА ===
+
+// Вызываем загрузку и обновление UI при старте скрипта
+window.loadGame();  
+window.updateUI();  

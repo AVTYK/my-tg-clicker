@@ -248,4 +248,4 @@ function startLaborShift() {
         return;
     }
 
-    isLaborActive = true;}
+    isLaborActive = true;

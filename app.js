@@ -1,6 +1,6 @@
-// Игровое состояние (Раздельные балансы)
-let balanceUSD = 0;
-let balanceBTC = 0;
+// Игровое состояние (Загрузка из памяти или значения по умолчанию)
+let balanceUSD = parseFloat(localStorage.getItem('clicker_balanceUSD')) || 0;
+let balanceBTC = parseFloat(localStorage.getItem('clicker_balanceBTC')) || 0;
 
 let passiveUSD = 0;
 let passiveBTC = 0;
@@ -9,18 +9,27 @@ let currentCurrency = 'btc';
 let playerUsername = "Вы (Учитель)";
 
 // Переменные биржи труда (Смены)
-let isLaborActive = false;
-let laborEndTime = 0;
-let nextLaborAvailableTime = 0;
+let isLaborActive = localStorage.getItem('clicker_isLaborActive') === 'true';
+let laborEndTime = parseInt(localStorage.getItem('clicker_laborEndTime')) || 0;
+let nextLaborAvailableTime = parseInt(localStorage.getItem('clicker_nextLaborAvailableTime')) || 0;
 
-// Конфигурация улучшений
+// Конфигурация улучшений (Цены подгружаются из памяти, чтобы прогресс не терялся)
 const upgrades = {
-    1: { name: 'Бизнес-клик', cost: 100, currency: 'usd', incomeUSD: 0.1, incomeBTC: 0 },
-    2: { name: 'Крипто-ферма', cost: 500, currency: 'usd', incomeUSD: 0, incomeBTC: 0.0005 },
-    3: { name: 'Банковская сеть', cost: 1.5, currency: 'btc', incomeUSD: 50.0, incomeBTC: 0 }
+    1: { name: 'Бизнес-клик', cost: parseInt(localStorage.getItem('upg_cost_1')) || 100, currency: 'usd', incomeUSD: 0.1, incomeBTC: 0 },
+    2: { name: 'Крипто-ферма', cost: parseInt(localStorage.getItem('upg_cost_2')) || 500, currency: 'usd', incomeUSD: 0, incomeBTC: 0.0005 },
+    3: { name: 'Банковская сеть', cost: parseFloat(localStorage.getItem('upg_cost_3')) || 1.5, currency: 'btc', incomeUSD: 50.0, incomeBTC: 0 }
 };
 
-// Виртуальные лидеры (для пересчета в USD: их BTC умножаются на текущий курс)
+// Базовый список рефералов для демонстрации механики (сохраняется в памяти)
+let defaultReferrals = [
+    { id: 101, username: "Ivan_Crypto", clicksToday: 52, daysActive: 3, status: "Проверен", bonusPaid: true },
+    { id: 102, username: "Masha_AMG", clicksToday: 15, daysActive: 1, status: "В процессе (1/3 дн)", bonusPaid: false },
+    { id: 103, username: "Dmitry_Trader", clicksToday: 0, daysActive: 0, status: "В процессе (0/3 дн)", bonusPaid: false }
+];
+
+let referrals = JSON.parse(localStorage.getItem('clicker_referrals')) || defaultReferrals;
+
+// Виртуальные лидеры для Топ-500
 let leaders = [
     { username: "Pavel_Durov", btc: 2, usd: 500000 },
     { username: "Crypto_Sheikh", btc: 5, usd: 200000 },
@@ -28,7 +37,7 @@ let leaders = [
     { username: "Elon_Musk", btc: 1, usd: 80000 }
 ];
 
-// Элементы UI
+// Получение элементов UI
 const displayBTC = document.getElementById('balance-btc');
 const displayUSD = document.getElementById('balance-usd');
 const displayPassiveBTC = document.getElementById('passive-btc');
@@ -42,6 +51,8 @@ const exchangeStatus = document.getElementById('exchange-status');
 const laborTimerText = document.getElementById('labor-timer-text');
 const startLaborBtn = document.getElementById('start-labor-btn');
 const leaderboardList = document.getElementById('leaderboard-list');
+const referralsList = document.getElementById('referrals-list');
+const inviteCopyStatus = document.getElementById('invite-copy-status');
 
 // Инициализация TG WebApp
 if (window.Telegram && window.Telegram.WebApp) {
@@ -52,21 +63,47 @@ if (window.Telegram && window.Telegram.WebApp) {
     }
 }
 
+// ФУНКЦИЯ СОХРАНЕНИЯ ДАННЫХ В ПАМЯТЬ
+function saveGameData() {
+    localStorage.setItem('clicker_balanceUSD', balanceUSD);
+    localStorage.setItem('clicker_balanceBTC', balanceBTC);
+    localStorage.setItem('clicker_isLaborActive', isLaborActive);
+    localStorage.setItem('clicker_laborEndTime', laborEndTime);
+    localStorage.setItem('clicker_nextLaborAvailableTime', nextLaborAvailableTime);
+    localStorage.setItem('clicker_referrals', JSON.stringify(referrals));
+    localStorage.setItem('upg_cost_1', upgrades[1].cost);
+    localStorage.setItem('upg_cost_2', upgrades[2].cost);
+    localStorage.setItem('upg_cost_3', upgrades[3].cost);
+}
+
+// Расчет пассивного дохода на основе купленных бизнесов
+function calculatePassiveIncomeRate() {
+    passiveUSD = 0;
+    passiveBTC = 0;
+
+    let level1 = Math.round(Math.log(upgrades[1].cost / 100) / Math.log(1.5));
+    let level2 = Math.round(Math.log(upgrades[2].cost / 500) / Math.log(1.5));
+    let level3 = Math.round(Math.log(upgrades[3].cost / 1.5) / Math.log(1.5));
+
+    if (level1 > 0) passiveUSD += level1 * upgrades[1].incomeUSD;
+    if (level2 > 0) passiveBTC += level2 * upgrades[2].incomeBTC;
+    if (level3 > 0) passiveUSD += level3 * upgrades[3].incomeUSD;
+}
+
 // РАСЧЕТ МИРОВОГО КУРСА БИТКОИНА (50,000$ - 180,000$)
 let currentBTCPrice = 50000;
 function calculateLiveRate() {
     const date = new Date();
-    const day = date.getDate(); // День месяца (1-31)
+    const day = date.getDate(); 
     
-    // Плавная базовая волна синусоиды на основе дней месяца
     const baseWave = (Math.sin((day / 31) * Math.PI * 2) + 1) / 2; 
-    const basePrice = 50000 + baseWave * 130000; // Диапазон от 50к до 180к
-    
-    // Секундный случайный шум торгов (+/- 450 долларов)
+    const basePrice = 50000 + baseWave * 130000; 
     const noise = (Math.random() - 0.5) * 900;
     
     currentBTCPrice = Math.max(50000, Math.min(180000, basePrice + noise));
-    liveRateDisplay.textContent = `$${Math.floor(currentBTCPrice).toLocaleString()}`;
+    if (liveRateDisplay) {
+        liveRateDisplay.textContent = `$${Math.floor(currentBTCPrice).toLocaleString()}`;
+    }
 }
 
 // Переключение валюты клика
@@ -89,45 +126,52 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
 
-    document.getElementById(`tab-${tabName}`).classList.add('active');
-    document.getElementById(`btn-nav-${tabName}`).classList.add('active');
+    const targetTab = document.getElementById(`tab-${tabName}`);
+    const targetBtn = document.getElementById(`btn-nav-${tabName}`);
+    
+    if (targetTab) targetTab.classList.add('active');
+    if (targetBtn) targetBtn.classList.add('active');
 
     if (tabName === 'leaderboard') renderLeaderboard();
+    if (tabName === 'referrals') renderReferrals();
 }
 
 // Обновление цифр
 function updateUI() {
-    displayBTC.textContent = balanceBTC.toFixed(4);
-    displayUSD.textContent = balanceUSD.toFixed(1);
-    displayPassiveBTC.textContent = passiveBTC.toFixed(4);
-    displayPassiveUSD.textContent = passiveUSD.toFixed(1);
+    if (displayBTC) displayBTC.textContent = balanceBTC.toFixed(4);
+    if (displayUSD) displayUSD.textContent = balanceUSD.toFixed(1);
+    if (displayPassiveBTC) displayPassiveBTC.textContent = passiveBTC.toFixed(4);
+    if (displayPassiveUSD) displayPassiveUSD.textContent = passiveUSD.toFixed(1);
 }
 
-// Обработка клика с учетом Биржи Труда
-clickBtn.addEventListener('click', (e) => {
-    let addValue = 1;
-    let textContent = "";
+// Обработка клика
+if (clickBtn) {
+    clickBtn.addEventListener('click', (e) => {
+        let addValue = 1;
+        let textContent = "";
 
-    if (currentCurrency === 'btc') {
-        balanceBTC += 0.0001; // Клик по BTC дает сатоши
-        textContent = "+0.0001 BTC 🪙";
-    } else {
-        // Если запущена рабочая смена — платим по 5$ за клик вместо 1$
-        if (isLaborActive) {
-            addValue = 5;
-            textContent = "+5.0 $ 💼";
+        if (currentCurrency === 'btc') {
+            balanceBTC += 0.0001;
+            textContent = "+0.0001 BTC 🪙";
         } else {
-            addValue = 1;
-            textContent = "+1.0 $ 💵";
+            if (isLaborActive) {
+                addValue = 5;
+                textContent = "+5.0 $ 💼";
+            } else {
+                addValue = 1;
+                textContent = "+1.0 $ 💵";
+            }
+            balanceUSD += addValue;
         }
-        balanceUSD += addValue;
-    }
 
-    createFloatingText(e, textContent);
-    updateUI();
-});
+        createFloatingText(e, textContent);
+        updateUI();
+        saveGameData();
+    });
+}
 
 function createFloatingText(e, textContent) {
+    if (!clickAreaContainer || !clickBtn) return;
     const text = document.createElement('div');
     text.classList.add('floating-number');
     text.textContent = textContent;
@@ -144,20 +188,19 @@ function buyUpgrade(id) {
     
     if (upgrade.currency === 'usd' && balanceUSD >= upgrade.cost) {
         balanceUSD -= upgrade.cost;
-        passiveUSD += upgrade.incomeUSD;
-        passiveBTC += upgrade.incomeBTC;
         upgrade.cost = Math.ceil(upgrade.cost * 1.5);
         document.getElementById(`upgrade-${id}`).querySelector('.cost').textContent = upgrade.cost;
     } else if (upgrade.currency === 'btc' && balanceBTC >= upgrade.cost) {
         balanceBTC -= upgrade.cost;
-        passiveUSD += upgrade.incomeUSD;
-        passiveBTC += upgrade.incomeBTC;
         upgrade.cost = (upgrade.cost * 1.5);
         document.getElementById(`upgrade-${id}`).querySelector('.cost').textContent = upgrade.cost.toFixed(2);
     } else {
         alert('Недостаточно средств для этой инвестиции!');
+        return;
     }
+    calculatePassiveIncomeRate();
     updateUI();
+    saveGameData();
 }
 
 // ТРЕЙДИНГ (ОБМЕННИК)
@@ -175,96 +218,34 @@ function tradeCrypto(action) {
         if (balanceUSD >= totalCostUSD) {
             balanceUSD -= totalCostUSD;
             balanceBTC += amount;
-            exchangeStatus.textContent = `✅ Успешно куплено ${amount} BTC за $${Math.floor(totalCostUSD)}`;
+            exchangeStatus.textContent = `✅ Куплено ${amount} BTC за $${Math.floor(totalCostUSD)}`;
             exchangeStatus.style.color = "#00ff88";
         } else {
-            exchangeStatus.textContent = "❌ Недостаточно Долларов для покупки!";
+            exchangeStatus.textContent = "❌ Недостаточно Долларов!";
             exchangeStatus.style.color = "#ff5555";
         }
     } else {
         if (balanceBTC >= amount) {
             balanceBTC -= amount;
             balanceUSD += totalCostUSD;
-            exchangeStatus.textContent = `✅ Успешно продано ${amount} BTC за $${Math.floor(totalCostUSD)}`;
+            exchangeStatus.textContent = `✅ Продано ${amount} BTC за $${Math.floor(totalCostUSD)}`;
             exchangeStatus.style.color = "#00ff88";
         } else {
-            exchangeStatus.textContent = "❌ Недостаточно BTC для продажи!";
+            exchangeStatus.textContent = "❌ Недостаточно BTC!";
             exchangeStatus.style.color = "#ff5555";
         }
     }
     exchangeAmountInput.value = "";
     updateUI();
+    saveGameData();
 }
 
 // VIP СМЕНА НА БИРЖЕ ТРУДА
 function startLaborShift() {
     const now = Date.now();
     if (now < nextLaborAvailableTime) {
-        alert("Ваши сутки еще не прошли! Отдохните перед новой смена.");
+        alert("Ваши сутки еще не прошли! Отдохните.");
         return;
     }
 
-    isLaborActive = true;
-    // Смена длится 1 час (В кодовой миллисекундной логике: 1 час = 3600000 мс)
-    laborEndTime = now + 3600000;
-    // Следующая смена доступна через 24 часа (86400000 мс)
-    nextLaborAvailableTime = now + 86400000;
-
-    startLaborBtn.disabled = true;
-    startLaborBtn.style.background = "#444";
-    startLaborBtn.textContent = "Смена запущена";
-}
-
-// Таймер для контроля смен
-function updateLaborTimer() {
-    const now = Date.now();
-
-    if (isLaborActive) {
-        const timeLeft = laborEndTime - now;
-        if (timeLeft <= 0) {
-            isLaborActive = false;
-            laborTimerText.textContent = "Смена завершена! Кулдаун.";
-            laborTimerText.style.color = "#ff5555";
-        } else {
-            const mins = Math.floor((timeLeft % 3600000) / 60000);
-            const secs = Math.floor((timeLeft % 60000) / 1000);
-            laborTimerText.textContent = `💼 Смена активна! Осталось: ${mins}м ${secs}с (Доход x5)`;
-            laborTimerText.style.color = "#00ff88";
-        }
-    } else if (now < nextLaborAvailableTime) {
-        const timeLeft = nextLaborAvailableTime - now;
-        const hrs = Math.floor(timeLeft / 3600000);
-        const mins = Math.floor((timeLeft % 3600000) / 60000);
-        laborTimerText.textContent = `⏳ Новая смена через: ${hrs}ч ${mins}м`;
-        laborTimerText.style.color = "#ffaa00";
-        startLaborBtn.disabled = true;
-        startLaborBtn.textContent = "Доступ заблокирован";
-    } else {
-        laborTimerText.textContent = "Статус: Свободен к набору (1 час)";
-        laborTimerText.style.color = "#00ff88";
-        startLaborBtn.disabled = false;
-        startLaborBtn.style.background = "linear-gradient(135deg, #ffaa00 0%, #ff5500 100%)";
-        startLaborBtn.textContent = "Начать рабочую смену";
-    }
-}
-
-// Казино VIP
-function playCasino(bet) {
-    if (balanceUSD < bet) {
-        casinoResult.textContent = "❌ Недостаточно Долларов для ставки!";
-        casinoResult.style.color = "#ff5555";
-        return;
-    }
-    balanceUSD -= bet;
-    if (Math.floor(Math.random() * 100) < 60) {
-        balanceUSD += bet * 2;
-        casinoResult.textContent = `👑 Выиграно +$${bet * 2}!`;
-        casinoResult.style.color = "#00ff88";
-    } else {
-        casinoResult.textContent = `📉 Потери на ставках: -$${bet}`;
-        casinoResult.style.color = "#ff5555";
-    }
-    updateUI();
-}
-
-// Таблица лидеров в общем эквиваленте USD
+    isLaborActive = true;}

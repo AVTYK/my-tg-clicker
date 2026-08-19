@@ -22,7 +22,7 @@
                 </div>
             </div>
             <div class="stats-row">
-                <div class="stat-item">⛏️ +<span id="passive-btc">0.0</span> BTC/с</div>
+                <div class="stat-item">⛏️ +<span id="passive-btc">0.0000</span> BTC/с</div>
                 <div class="stat-item">💵 +<span id="passive-usd">0.0</span> $/с</div>
             </div>
         </div>
@@ -125,7 +125,25 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 4: РЕЙТИНГ -->
+        <!-- ВКЛАДКА 4: РЕФЕРАЛЫ (НОВАЯ) -->
+        <div id="tab-referrals" class="tab-content">
+            <div class="referrals-section">
+                <h2>👥 Реферальная Программа</h2>
+                <div class="referrals-promo-card">
+                    <h3>Приглашайте партнеров</h3>
+                    <p>За каждого друга, активного в игре <strong>не менее 3 дней</strong> (от 50 кликов в день), вы мгновенно получите бонус в размере <strong style="color: #00ff88;">$25,000</strong>!</p>
+                    <button class="invite-action-btn" onclick="copyInviteLink()">🔗 Скопировать ссылку приглашения</button>
+                    <p id="invite-copy-status" style="font-size: 0.85rem; margin-top: 8px; font-weight: bold; color: #888;"></p>
+                </div>
+                
+                <h2 style="margin-top: 20px;">📋 Ваша команда партнеров</h2>
+                <div id="referrals-list" class="referrals-list">
+                    <!-- Заполняется динамически из JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 5: РЕЙТИНГ -->
         <div id="tab-leaderboard" class="tab-content">
             <div class="leaderboard-section">
                 <h2>🏆 Мировая Элита (Топ в $)</h2>
@@ -133,11 +151,12 @@
             </div>
         </div>
 
-        <!-- ТАБ-БАР НАВИГАЦИИ -->
+        <!-- АДАПТИВНЫЙ ТАБ-БАР НАВИГАЦИИ (НА 5 КНОПОК) -->
         <div class="nav-bar">
             <button class="nav-btn active" id="btn-nav-game" onclick="switchTab('game')">🎮 Игра</button>
             <button class="nav-btn" id="btn-nav-exchange" onclick="switchTab('exchange')">📈 Биржа</button>
             <button class="nav-btn" id="btn-nav-labor" onclick="switchTab('labor')">💼 Труд</button>
+            <button class="nav-btn" id="btn-nav-referrals" onclick="switchTab('referrals')">👥 Друзья</button>
             <button class="nav-btn" id="btn-nav-leaderboard" onclick="switchTab('leaderboard')">🏆 Топ</button>
         </div>
     </div>

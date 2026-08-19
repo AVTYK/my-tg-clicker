@@ -74,12 +74,12 @@ window.updateUI = function() {
 };
 
 window.calculateClickPower = function() {
-    // СТРОГОЕ ИСПРАВЛЕНИЕ: обращение по конкретному ключу ID
+    // ИСПРАВЛЕНО: Прямое обращение по ID ключу [1] вместо .level
     return 1 + (window.upgrades[1].level * window.upgrades[1].power);
 };
 
 window.calculatePassiveIncome = function() {
-    // СТРОГОЕ ИСПРАВЛЕНИЕ: обращение по конкретным ключам ID
+    // ИСПРАВЛЕНО: Прямое обращение по ID ключам [2] и [3] вместо .level
     const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
     const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
     return incomeFromMining + incomeFromBusiness;

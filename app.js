@@ -100,7 +100,7 @@ window.switchTab = function(tabId) {
 
 // Клик для заработка (Главная кнопка)
 window.mainClick = function() {
-    // Сила клика увеличивается от уровня апгрейда ID 1
+    // Сила клика увеличивается строго от уровня апгрейда ID 1
     const clickPower = 1 + (window.upgrades[1].level * window.upgrades[1].income);
     window.fiat += clickPower;
     
@@ -219,7 +219,7 @@ window.switchTab(window.currentTab);
 // 6. ЕДИНЫЙ СЕКУНДНЫЙ СЕТИНТЕРВАЛ (TICKER)
 // ==========================================
 setInterval(function() {
-    // 1. Расчет пассивного дохода от апгрейдов ID 2 и ID 3
+    // 1. Расчет пассивного дохода строго по ID ключам 2 и 3
     const passiveIncome2 = window.upgrades[2].level * window.upgrades[2].income;
     const passiveIncome3 = window.upgrades[3].level * window.upgrades[3].income;
     const totalPassiveIncome = passiveIncome2 + passiveIncome3;

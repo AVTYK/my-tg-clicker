@@ -6,7 +6,7 @@ let balanceBTC = parseFloat(localStorage.getItem('clicker_balanceBTC')) || 0;
 
 let passiveUSD = 0;
 let passiveBTC = 0;
-let currentCurrency = 'btc'; 
+let currentCurrency = 'btc'; // 'btc' или 'usd'
 let playerUsername = "Вы (Учитель)";
 
 // Переменные биржи труда (Смены)
@@ -99,125 +99,152 @@ function updateDisplay() {
     if (displayUSD) displayUSD.textContent = balanceUSD.toFixed(2);
     if (displayPassiveBTC) displayPassiveBTC.textContent = passiveBTC.toFixed(4);
     if (displayPassiveUSD) displayPassiveUSD.textContent = passiveUSD.toFixed(2);
-    if (liveRateDisplay) liveRateDisplay.textContent = Math.floor(currentBTCRate).toLocaleString() + " $";
+    if (liveRateDisplay) liveRateDisplay.textContent = "$" + Math.floor(currentBTCRate).toLocaleString();
     
-    // Обновление кнопок улучшений
+    // Динамическое обновление цен в карточках улучшений HTML
     for (let id = 1; id <= 3; id++) {
-        const costBtn = document.getElementById('upgrade-cost-' + id);
-        const levelText = document.getElementById('upgrade-level-' + id);
-        const cost = getUpgradeCost(id);
-        if (costBtn) {
-            costBtn.textContent = upgrades[id].currency === 'usd' ? cost + " $" : cost + " BTC";
-        }
-        if (levelText) {
-            levelText.textContent = "Ур. " + upgrades[id].level;
+        const upgradeCard = document.getElementById('upgrade-' + id);
+        if (upgradeCard) {
+            const costSpan = upgradeCard.querySelector('.cost');
+            const h3Text = upgradeCard.querySelector('h3');
+            const cost = getUpgradeCost(id);
+            
+            if (costSpan) {
+                costSpan.textContent = cost.toLocaleString();
+            }
+            if (h3Text) {
+                h3Text.textContent = upgrades[id].name + " (Ур. " + upgrades[id].level + ")";
+            }
         }
     }
 }
 
 // ==========================================
-// 4. ЛОГИКА ТАБ-БАРА И ЭКРАНОВ
+// 4. ГЛОБАЛЬНАЯ ЛОГИКА НАВИГАЦИИ (МЕНЮ)
 // ==========================================
-function initTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn, .menu-item, [data-tab]');
-    const screens = document.querySelectorAll('.screen, .tab-content, [id^="screen-"]');
+window.switchTab = function(tabName) {
+    const screens = document.querySelectorAll('.tab-content');
+    for (let i = 0; i < screens.length; i++) {
+        screens[i].classList.remove('active');
+    }
     
-    if (tabButtons.length === 0) return;
-
-    for (let i = 0; i < tabButtons.length; i++) {
-        const btn = tabButtons[i];
-        btn.addEventListener('click', function() {
-            const targetTab = btn.getAttribute('data-tab') || btn.id.replace('tab-', '');
-            if (!targetTab) return;
-
-            for (let j = 0; j < tabButtons.length; j++) {
-                tabButtons[j].classList.remove('active');
-            }
-            btn.classList.add('active');
-
-            for (let k = 0; k < screens.length; k++) {
-                const screen = screens[k];
-                if (screen.id === 'screen-' + targetTab || screen.id === targetTab || screen.getAttribute('data-screen') === targetTab) {
-                    screen.style.display = 'block';
-                } else {
-                    screen.style.display = 'none';
-                }
-            }
-
-            if (targetTab === 'top' || targetTab === 'топ') renderLeaderboard();
-            if (targetTab === 'friends' || targetTab === 'друзья') renderReferrals();
-        });
+    const targetScreen = document.getElementById('tab-' + tabName);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
     }
-}
+
+    const navButtons = document.querySelectorAll('.nav-btn');
+    for (let j = 0; j < navButtons.length; j++) {
+        navButtons[j].classList.remove('active');
+    }
+
+    const activeNavBtn = document.getElementById('btn-nav-' + tabName);
+    if (activeNavBtn) {
+        activeNavBtn.classList.add('active');
+    }
+
+    if (tabName === 'leaderboard') renderLeaderboard();
+    if (tabName === 'referrals') renderReferrals();
+};
 
 // ==========================================
-// 5. ИГРОВЫЕ МЕХАНИКИ (КЛИКЕР, КАЗИНО, БИРЖА)
+// 5. ГЛОБАЛЬНЫЕ ИГРОВЫЕ МЕХАНИКИ
 // ==========================================
-function initGameMechanics() {
-    const toggleUsdBtn = document.getElementById('toggle-currency-usd');
-    const toggleBtcBtn = document.getElementById('toggle-currency-btc');
-    const clickBtn = document.getElementById('click-btn');
-
-    if (toggleUsdBtn) {
-        toggleUsdBtn.addEventListener('click', function() {
-            currentCurrency = 'usd';
-            toggleUsdBtn.classList.add('active');
-            if (toggleBtcBtn) toggleBtcBtn.classList.remove('active');
-        });
+window.changeCurrency = function(currencyType) {
+    currentCurrency = currencyType;
+    const btnBtc = document.getElementById('select-btc');
+    const btnUsd = document.getElementById('select-usd');
+    
+    if (currencyType === 'btc') {
+        if (btnBtc) btnBtc.classList.add('active');
+        if (btnUsd) btnUsd.classList.remove('active');
+    } else {
+        if (btnUsd) btnUsd.classList.add('active');
+        if (btnBtc) btnBtc.classList.remove('active');
     }
+};
 
-    if (toggleBtcBtn) {
-        toggleBtcBtn.addEventListener('click', function() {
-            currentCurrency = 'btc';
-            toggleBtcBtn.classList.add('active');
-            if (toggleUsdBtn) toggleUsdBtn.classList.remove('active');
-        });
-    }
-
-    if (clickBtn) {
-        clickBtn.addEventListener('click', function() {
-            const businessClickLevel = upgrades[1].level;
-            if (currentCurrency === 'usd') {
-                let clickPower = isLaborActive ? 5 : 1;
-                clickPower += businessClickLevel * 0.5;
-                balanceUSD += clickPower;
-            } else {
-                let btcClickPower = 0.0001 + (businessClickLevel * 0.00001);
-                balanceBTC += btcClickPower;
-            }
-            updateDisplay();
-            saveGameData();
-        });
-    }
-
-    // VIP Казино (Шанс 60%)
-    const playCasinoBtn = document.getElementById('play-casino-btn');
-    const casinoInput = document.getElementById('casino-bet-amount');
+window.playCasino = function(betAmount) {
     const casinoResult = document.getElementById('casino-result');
-
-    if (playCasinoBtn && casinoInput) {
-        playCasinoBtn.addEventListener('click', function() {
-            const bet = parseFloat(casinoInput.value);
-            if (isNaN(bet) || bet <= 0 || balanceUSD < bet) {
-                if (casinoResult) casinoResult.textContent = "Недостаточно средств или неверная ставка!";
-                return;
-            }
-            balanceUSD -= bet;
-            if (Math.random() < 0.60) {
-                balanceUSD += bet * 2;
-                if (casinoResult) casinoResult.textContent = "Вы выиграли! +" + (bet * 2).toFixed(2) + " $";
-            } else {
-                if (casinoResult) casinoResult.textContent = "Вы проиграли! -" + bet.toFixed(2) + " $";
-            }
-            updateDisplay();
-            saveGameData();
-        });
+    const bet = parseFloat(betAmount);
+    
+    if (balanceUSD < bet) {
+        if (casinoResult) casinoResult.textContent = "Недостаточно USD для этой VIP ставки!";
+        return;
     }
-}
-
-// Запуск приложения при загрузке страницы
-document.addEventListener("DOMContentLoaded", function() {
-    initTabs();
-    initGameMechanics();
+    
+    balanceUSD -= bet;
+    if (Math.random() < 0.60) {
+        const winAmount = bet * 2;
+        balanceUSD += winAmount;
+        if (casinoResult) casinoResult.textContent = "Вы выиграли элитную ставку! +" + winAmount.toFixed(2) + " $";
+    } else {
+        if (casinoResult) casinoResult.textContent = "Казино забрало ставку. Попробуйте еще раз!";
+    }
+    triggerHaptic();
     updateDisplay();
-});
+    saveGameData();
+};
+
+window.buyUpgrade = function(id) {
+    const upg = upgrades[id];
+    if (!upg) return;
+    
+    const cost = getUpgradeCost(id);
+    if (upg.currency === 'usd' && balanceUSD >= cost) {
+        balanceUSD -= cost;
+        upg.level++;
+        triggerHaptic();
+    } else if (upg.currency === 'btc' && balanceBTC >= cost) {
+        balanceBTC -= cost;
+        upg.level++;
+        triggerHaptic();
+    } else {
+        alert("Недостаточно средств для инвестирования!");
+        return;
+    }
+    updateDisplay();
+    saveGameData();
+};
+
+window.tradeCrypto = function(actionType) {
+    const exchangeAmountInput = document.getElementById('exchange-amount');
+    const exchangeStatus = document.getElementById('exchange-status');
+    if (!exchangeAmountInput) return;
+
+    const amount = parseFloat(exchangeAmountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+        if (exchangeStatus) exchangeStatus.textContent = "Введите корректную сумму операции!";
+        return;
+    }
+
+    if (actionType === 'buy') {
+        const requiredUSD = amount * currentBTCRate;
+        if (balanceUSD >= requiredUSD) {
+            balanceUSD -= requiredUSD;
+            balanceBTC += amount;
+            if (exchangeStatus) exchangeStatus.textContent = "Успешно купили " + amount + " BTC!";
+        } else {
+            if (exchangeStatus) exchangeStatus.textContent = "Недостаточно долларов для покупки!";
+        }
+    } else if (actionType === 'sell') {
+        if (balanceBTC >= amount) {
+            balanceBTC -= amount;
+            balanceUSD += amount * currentBTCRate;
+            if (exchangeStatus) exchangeStatus.textContent = "Успешно продали " + amount + " BTC!";
+        } else {
+            if (exchangeStatus) exchangeStatus.textContent = "Недостаточно BTC на балансе!";
+        }
+    }
+    updateDisplay();
+    saveGameData();
+};
+
+// ==========================================
+// 6. БИРЖА ТРУДА, РЕФЕРАЛЫ И ЛИДЕРБОРД
+// ==========================================
+window.startLaborShift = function() {
+    const now = Date.now();
+    if (now < nextLaborAvailableTime) return;
+    
+    isLaborActive = true;}

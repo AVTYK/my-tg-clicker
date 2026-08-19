@@ -23,6 +23,7 @@ const upgrades = {
 // Расчет цены улучшения на основе его текущего уровня
 function getUpgradeCost(id) {
     const upg = upgrades[id];
+    if (!upg) return 0;
     if (upg.currency === 'usd') {
         return Math.ceil(upg.baseCost * Math.pow(1.5, upg.level));
     } else {
@@ -47,7 +48,7 @@ let leaders = [
     { username: "Elon_Musk", btc: 1, usd: 80000 }
 ];
 
-// Получение элементов UI
+// Получение элементов UI с защитой
 const displayBTC = document.getElementById('balance-btc');
 const displayUSD = document.getElementById('balance-usd');
 const displayPassiveBTC = document.getElementById('passive-btc');
@@ -67,36 +68,98 @@ const inviteCopyStatus = document.getElementById('invite-copy-status');
 // Инициализация Telegram WebApp
 if (window.Telegram && window.Telegram.WebApp) {
     const tg = window.Telegram.WebApp;
-    tg.ready(); tg.expand();
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        playerUsername = tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name;
+    try {
+        tg.ready();
+        tg.expand();
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            playerUsername = tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name;
+        }
+    } catch (e) {
+        console.error("Ошибка инициализации Telegram WebApp API:", e);
     }
 }
 
 // ФУНКЦИЯ СОХРАНЕНИЯ ДАННЫХ В ПАМЯТЬ
 function saveGameData() {
-    localStorage.setItem('clicker_balanceUSD', balanceUSD);
-    localStorage.setItem('clicker_balanceBTC', balanceBTC);
-    localStorage.setItem('clicker_isLaborActive', isLaborActive);
-    localStorage.setItem('clicker_laborEndTime', laborEndTime);
-    localStorage.setItem('clicker_nextLaborAvailableTime', nextLaborAvailableTime);
-    localStorage.setItem('clicker_referrals', JSON.stringify(referrals));
-    
-    // Сохраняем уровни улучшений
-    for (const id in upgrades) {
-        localStorage.setItem(`upg_level_${id}`, upgrades[id].level);
+    try {
+        localStorage.setItem('clicker_balanceUSD', balanceUSD);
+        localStorage.setItem('clicker_balanceBTC', balanceBTC);
+        localStorage.setItem('clicker_isLaborActive', isLaborActive);
+        localStorage.setItem('clicker_laborEndTime', laborEndTime);
+        localStorage.setItem('clicker_nextLaborAvailableTime', nextLaborAvailableTime);
+        localStorage.setItem('clicker_referrals', JSON.stringify(referrals));
+        
+        // Сохраняем уровни улучшений
+        for (const id in upgrades) {
+            localStorage.setItem(`upg_level_${id}`, upgrades[id].level);
+        }
+    } catch (e) {
+        console.error("Не удалось сохранить данные в LocalStorage:", e);
     }
 }
 
-// Пример функции для обновления баланса и отображения его на UI
+// Функция для безопасного обновления текстового контента элементов UI
 function updateDisplay() {
-    displayBTC.textContent = balanceBTC.toFixed(4);
-    displayUSD.textContent = balanceUSD.toFixed(2);
-    displayPassiveBTC.textContent = passiveBTC.toFixed(4);
-    displayPassiveUSD.textContent = passiveUSD.toFixed(2);
+    if (displayBTC) displayBTC.textContent = balanceBTC.toFixed(4);
+    if (displayUSD) displayUSD.textContent = balanceUSD.toFixed(2);
+    if (displayPassiveBTC) displayPassiveBTC.textContent = passiveBTC.toFixed(4);
+    if (displayPassiveUSD) displayPassiveUSD.textContent = passiveUSD.toFixed(2);
 }
 
-// Вызов функции для обновления отображения при загрузке
-updateDisplay();
+// Инициализация переключения вкладок таб-бара (Безопасное навешивание событий)
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn'); // Убедитесь, что у кнопок меню класс .tab-btn
+    const screens = document.querySelectorAll('.screen');    // Убедитесь, что у экранов класс .screen
+    
+    if (tabButtons.length === 0) return;
 
-// Добавьте другие функции для обработки кликов, улучшений и т.д. по мере необходимости
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.getAttribute('data-tab');
+            if (!targetTab) return;
+
+            // Переключаем активный класс у кнопок меню
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Переключаем видимость экранов
+            screens.forEach(screen => {
+                if (screen.id === `screen-${targetTab}`) {
+                    screen.style.display = 'block';
+                } else {
+                    screen.style.display = 'none';
+                }
+            });
+        });
+    });
+}
+
+// Инициализация базового клика по главной кнопке
+function initClicker() {
+    if (!clickBtn) return;
+    
+    clickBtn.addEventListener('click', () => {
+        // Логика клика с учетом Биржи Труда
+        let clickPower = 1;
+        if (currentCurrency === 'usd') {
+            if (isLaborActive) {
+                clickPower = 5; // Контракт активен: 5$ за клик
+            } else {
+                clickPower = 1; // Обычный режим доллара: 1$ за клик
+            }
+            balanceUSD += clickPower;
+        } else {
+            // Режим BTC клика
+            balanceBTC += 0.0001;
+        }
+        updateDisplay();
+        saveGameData();
+    });
+}
+
+// Запуск инициализации UI при полной загрузке DOM
+document.addEventListener('DOMContentLoaded', () => {
+    updateDisplay();
+    initTabs();
+    initClicker();
+});

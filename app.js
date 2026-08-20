@@ -16,8 +16,6 @@ window.gameState = {
 // ==========================================
 // 2. БАЗА ДАННЫХ УЛУЧШЕНИЙ (UPGRADES)
 // ==========================================
-// КРИТИЧЕСКОЕ ПРАВИЛО: У объекта upgrades нет свойства .level!
-// Обращение идет строго по ключам ID: upgrades[1].level, upgrades[2].level, upgrades[3].level
 window.upgrades = {
     1: { name: "Business Click", basePrice: 10, priceMultiplier: 1.5, level: 0, power: 1 },
     2: { name: "Crypto Farm", basePrice: 100, priceMultiplier: 1.8, level: 0, power: 5 },
@@ -25,7 +23,55 @@ window.upgrades = {
 };
 
 // ==========================================
-// 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (UTILS)
+// 3. СОХРАНЕНИЕ И ЗАГРУЗКА (LOCAL STORAGE)
+// ==========================================
+window.saveGame = function() {
+    try {
+        const saveData = {
+            balance: window.gameState.balance,
+            cryptoBalance: window.gameState.cryptoBalance,
+            selectedCurrency: window.gameState.selectedCurrency,
+            upgrades: {
+                1: window.upgrades[1].level,
+                2: window.upgrades[2].level,
+                3: window.upgrades[3].level
+            }
+        };
+        localStorage.setItem('clicker_game_save', JSON.stringify(saveData));
+    } catch (error) {
+        console.error("Не удалось сохранить игру:", error);
+    }
+};
+
+window.loadGame = function() {
+    try {
+        const rawData = localStorage.getItem('clicker_game_save');
+        if (!rawData) return;
+
+        const savedData = JSON.parse(rawData);
+        if (!savedData) return;
+
+        // Пошагово восстанавливаем переменные, не ломая структуру gameState целиком
+        if (typeof savedData.balance === 'number') window.gameState.balance = savedData.balance;
+        if (typeof savedData.cryptoBalance === 'number') window.gameState.cryptoBalance = savedData.cryptoBalance;
+        if (savedData.selectedCurrency) window.gameState.selectedCurrency = savedData.selectedCurrency;
+
+        // Безопасное восстановление уровней апгрейдов по их ID ключам
+        if (savedData.upgrades) {
+            for (let id in savedData.upgrades) {
+                if (window.upgrades[id]) {
+                    window.upgrades[id].level = Number(savedData.upgrades[id]) || 0;
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Ошибка при загрузке сохранения. Сброс данных во избежание зависания.", e);
+        localStorage.removeItem('clicker_game_save');
+    }
+};
+
+// ==========================================
+// 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (UTILS)
 // ==========================================
 window.updateUI = function() {
     const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
@@ -74,12 +120,10 @@ window.updateUI = function() {
 };
 
 window.calculateClickPower = function() {
-    // ИСПРАВЛЕНО: Прямое обращение по ID ключу [1] вместо .level
     return 1 + (window.upgrades[1].level * window.upgrades[1].power);
 };
 
 window.calculatePassiveIncome = function() {
-    // ИСПРАВЛЕНО: Прямое обращение по ID ключам [2] и [3] вместо .level
     const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
     const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
     return incomeFromMining + incomeFromBusiness;
@@ -107,8 +151,31 @@ window.createFloatingText = function(text) {
 };
 
 // ==========================================
-// 4. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)
+// 5. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)
 // ==========================================
+window.switchTab = function(tabId) {
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(function(tab) {
+        tab.classList.remove('active');
+    });
+    
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+
+    const currentBtnId = 'nav-btn-' + tabId.replace('tab-', '');
+    const activeBtn = document.getElementById(currentBtnId);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+};
+
 window.changeCurrency = function(currencyCode) {
     if (window.gameState.currencyRates[currencyCode]) {
         window.gameState.selectedCurrency = currencyCode;
@@ -124,7 +191,7 @@ window.changeCurrency = function(currencyCode) {
         }
 
         window.updateUI();
-        window.saveGame(); // <-- СОХРАНЯЕМ ВЫБРАННУЮ ВАЛЮТУ
+        window.saveGame();
     }
 };
 
@@ -153,7 +220,7 @@ window.playCasino = function(betAmount) {
         }
     }
     window.updateUI();
-    window.saveGame(); // <-- СОХРАНЯЕМ БАЛАНС ПОСЛЕ КАЗИНО
+    window.saveGame();
 };
 
 window.buyUpgrade = function(upgradeId) {
@@ -166,7 +233,7 @@ window.buyUpgrade = function(upgradeId) {
         window.gameState.balance -= currentPrice;
         upgrade.level += 1;
         window.updateUI();
-        window.saveGame(); // <-- СОХРАНЯЕМ УРОВЕНЬ АПГРЕЙДА И БАЛАНС
+        window.saveGame();
     } else {
         alert("Недостаточно USD для покупки улучшения!");
     }
@@ -195,7 +262,7 @@ window.tradeCrypto = function(action) {
         }
     }
     window.updateUI();
-    window.saveGame(); // <-- СОХРАНЯЕМ ИЗМЕНЕНИЯ БАЛАНСОВ КРИПТЫ И ВАЛЮТЫ
+    window.saveGame();
 };
 
 window.startLaborShift = function() {
@@ -207,78 +274,17 @@ window.startLaborShift = function() {
     window.createFloatingText(displayText);
     
     window.updateUI();
-    window.saveGame(); // <-- СОХРАНЯЕМ БАЛАНС ПОСЛЕ КАЖДОГО КЛИКА
+    window.saveGame();
 };
 
-
-// ==========================================
-// 5. ИНИЦИАЛИЗАЦИЯ И ИГРОВЫЕ ЦИКЛЫ (GAME TIMERS)
-// ==========================================
-window.onload = function() {
-    window.updateUI();
-
-    setInterval(function() {
-        const passiveIncome = window.calculatePassiveIncome();
-        if (passiveIncome > 0) {
-            window.gameState.balance += passiveIncome;
-        }
-        
-        const priceChangePercent = (Math.random() * 5 - 2.5) / 100;
-        window.gameState.cryptoPrice += window.gameState.cryptoPrice * priceChangePercent;
-        if (window.gameState.cryptoPrice < 5000) {
-            window.gameState.cryptoPrice = 5000;
-        }
-
-        window.updateUI();
-    }, 1000);
-};
-// ==========================================
-// СОХРАНЕНИЕ И ЗАГРУЗКА (LOCAL STORAGE)
-// ==========================================
-window.saveGame = function() {
-    try {
-        const saveData = {
-            gameState: window.gameState,
-            // ИСПРАВЛЕНО: Теперь берем уровни строго по ключам ID [1], [2], [3]
-            upgrades: {
-                1: window.upgrades[1] ? window.upgrades[1].level : 0,
-                2: window.upgrades[2] ? window.upgrades[2].level : 0,
-                3: window.upgrades[3] ? window.upgrades[3].level : 0
-            }
-        };
-        localStorage.setItem('clicker_game_save', JSON.stringify(saveData));
-    } catch (error) {
-        console.error("Не удалось сохранить игру:", error);
-    }
+window.copyInviteLink = function() {
+    const dummyUrl = "https://t.me" + Math.floor(Math.random() * 899999 + 100000);
+    navigator.clipboard.writeText(dummyUrl).then(function() {
+        alert("Ссылка скопирована: " + dummyUrl);
+    }).catch(function() {
+        alert("Ошибка копирования. Ссылка: " + dummyUrl);
+    });
 };
 
-window.loadGame = function() {
-    const rawData = localStorage.getItem('clicker_game_save');
-    if (!rawData) return;
-
-    try {
-        const savedData = JSON.parse(rawData);
-        
-        // Восстанавливаем состояние игры
-        if (savedData.gameState) {
-            window.gameState = Object.assign(window.gameState, savedData.gameState);
-        }
-        
-        // Восстанавливаем уровни апгрейдов по их ID ключам
-        if (savedData.upgrades) {
-            for (let id in savedData.upgrades) {
-                if (window.upgrades[id]) {
-                    window.upgrades[id].level = savedData.upgrades[id];
-                }
-            }
-        }
-    } catch (e) {
-        console.error("Ошибка при загрузке сохранения:", e);
-    }
-};
-
-// === КОНЕЦ ВАШЕГО ФАЙЛА ===
-
-// Вызываем загрузку и обновление UI при старте скрипта
-window.loadGame();  
-window.updateUI();  
+// ==========================================
+// 6. ИНИЦИАЛИЗАЦИЯ ИГРЫ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ

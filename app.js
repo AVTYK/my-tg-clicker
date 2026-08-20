@@ -1,8 +1,8 @@
 // ==========================================
-// 1. СОСТОЯНИЕ ИГРЫ (STATE)
+// 🕹️ ГЛОБАЛЬНОЕ СОСТОЯНИЕ ИГРЫ (STATE)
 // ==========================================
 window.gameState = {
-    balance: 0,
+    balance: 0, 
     cryptoBalance: 0,
     selectedCurrency: 'USD',
     currencyRates: {
@@ -10,50 +10,143 @@ window.gameState = {
         EUR: 0.92,
         RUB: 90
     },
-    cryptoPrice: 50000
+    cryptoPrice: 50000,
+    leaderboard: {
+        currentLeague: 'Бронза',
+        userRank: 5000
+    },
+    // КРИТИЧЕСКАЯ АРХИТЕКТУРА: Уровни вынесены в стейт под числовые ID-ключи
+    upgradeLevels: {
+        1: 0,
+        2: 0,
+        3: 0
+    }
 };
 
-// ==========================================
-// 2. БАЗА ДАННЫХ УЛУЧШЕНИЙ (UPGRADES)
-// ==========================================
+// БАЗА ДАННЫХ УЛУЧШЕНИЙ (СВОЙСТВО .level ИСКЛЮЧЕНО)
 window.upgrades = {
-    1: { name: "Business Click", basePrice: 10, priceMultiplier: 1.5, level: 0, power: 1 },
-    2: { name: "Crypto Farm", basePrice: 100, priceMultiplier: 1.8, level: 0, power: 5 },
-    3: { name: "Bank Network", basePrice: 1000, priceMultiplier: 2.0, level: 0, power: 25 }
+    1: { name: "Business Click", basePrice: 10, priceMultiplier: 1.5, power: 1 },
+    2: { name: "Crypto Farm", basePrice: 100, priceMultiplier: 1.8, power: 5 },
+    3: { name: "Bank Network", basePrice: 1000, priceMultiplier: 2.0, power: 25 }
 };
 
+const playerNames = ["CryptoKing", "Satoshi_99", "MemeLord", "Elon_Fan", "ClickMaster", "DiamondHands", "Pavel_D", "Whale_🐋", "BullRunner", "BearHunter", "HODLer", "ToniK", "CyberPank", "Alpha_Z"];
+
 // ==========================================
-// 3. МЕХАНИКА РАСЧЕТОВ (MATH ENGINE)
+// 🧮 МАТЕМАТИЧЕСКИЕ РАСЧЕТЫ ДОХОДА
 // ==========================================
 window.calculateClickPower = function() {
-    if (!window.upgrades || !window.upgrades[1]) return 1;
-    return 1 + (window.upgrades[1].level * window.upgrades[1].power);
+    if (!window.upgrades || !window.gameState.upgradeLevels) return 1;
+    const currentLvl = window.gameState.upgradeLevels[1] || 0;
+    return 1 + (currentLvl * window.upgrades[1].power);
 };
 
 window.calculatePassiveIncome = function() {
-    if (!window.upgrades || !window.upgrades[2] || !window.upgrades[3]) return 0;
-    
-    const farmIncome = window.upgrades[2].level * window.upgrades[2].power;
-    const bankIncome = window.upgrades[3].level * window.upgrades[3].power;
-    
+    if (!window.upgrades || !window.gameState.upgradeLevels) return 0;
+    const farmLvl = window.gameState.upgradeLevels[2] || 0;
+    const bankLvl = window.gameState.upgradeLevels[3] || 0;
+    const farmIncome = farmLvl * window.upgrades[2].power;
+    const bankIncome = bankLvl * window.upgrades[3].power;
     return farmIncome + bankIncome;
 };
 
 // ==========================================
-// 4. СИСТЕМА LOCALSTORAGE (STORAGE ENGINE)
+// 🏆 СИСТЕМА ЛИГ И ДИНАМИЧЕСКИХ БОТОВ
+// ==========================================
+window.generateLeaderboard = function() {
+    const listContainer = document.getElementById('leaderboard-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = ''; 
+
+    const balance = window.gameState.balance;
+    let leagueName = 'Бронзовая лига';
+    let startRank = 5000;
+    const displayCount = 7; 
+
+    // Градации лиг по ТЗ игрока (проверка в эталонных USD)
+    if (balance >= 500000) {
+        leagueName = 'Платиновая лига (Топ 10)';
+        startRank = Math.max(2, Math.floor(10 - (balance - 500000) / 100000));
+    } else if (balance >= 5000) {
+        if (balance >= 5000) {
+            if (balance >= 50000) {
+                leagueName = 'Золотая лига (Топ 1000)';
+                startRank = Math.max(11, Math.floor(1000 - (balance - 50000) / 500));
+            } else {
+                leagueName = 'Серебряная лига (Топ 3000)';
+                startRank = Math.max(1001, Math.floor(3000 - (balance - 5000) / 20));
+            }
+        }
+    } else {
+        leagueName = 'Бронзовая лига (Топ 5000)';
+        startRank = Math.max(3001, Math.floor(5000 - balance / 2));
+    }
+
+    window.gameState.leaderboard.currentLeague = leagueName;
+    window.gameState.leaderboard.userRank = startRank;
+
+    const leagueTitleEl = document.getElementById('league-title');
+    if (leagueTitleEl) {
+        leagueTitleEl.innerText = leagueName;
+    }
+
+    const rate = window.gameState.currencyRates[window.gameState.selectedCurrency] || 1;
+    const currentCurrency = window.gameState.selectedCurrency;
+
+    for (let i = 0; i < displayCount; i++) {
+        const itemRank = startRank - 3 + i;
+        if (itemRank <= 0) continue; 
+
+        const row = document.createElement('div');
+        row.classList.add('leaderboard-item');
+        
+        // Подсветка строки игрока
+        if (itemRank === startRank) {
+            row.classList.add('user-row');
+            row.style.background = 'rgba(0, 255, 136, 0.15)';
+            row.style.fontWeight = 'bold';
+        }
+
+        let displayValue = "";
+        if (itemRank === startRank) {
+            displayValue = `${(window.gameState.balance * rate).toFixed(2)} ${currentCurrency}`;
+        } else {
+            const fakeBalance = window.gameState.balance + (startRank - itemRank) * (balance * 0.1 + 50);
+            displayValue = `${(Math.max(0, fakeBalance) * rate).toFixed(2)} ${currentCurrency}`;
+        }
+
+        const name = (itemRank === startRank) ? "Вы" : (playerNames[(itemRank % playerNames.length)] + "_" + itemRank);
+
+        row.innerHTML = `
+            <span class="rank">#${itemRank}</span>
+            <span class="name">${name}</span>
+            <span class="score">${displayValue}</span>
+        `;
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.padding = '8px 12px';
+        row.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+
+        listContainer.appendChild(row);
+    }
+};
+
+// ==========================================
+// 💾 СИСТЕМА LOCALSTORAGE И СОХРАНЕНИЯ
 // ==========================================
 window.saveGame = function() {
     try {
-        if (!window.upgrades || !window.upgrades[1] || !window.upgrades[2] || !window.upgrades[3]) return;
+        if (!window.upgrades || !window.gameState.upgradeLevels) return;
         
         const rawData = {
             balance: window.gameState.balance,
             cryptoBalance: window.gameState.cryptoBalance,
             selectedCurrency: window.gameState.selectedCurrency,
             upgradeLevels: {
-                1: window.upgrades[1].level,
-                2: window.upgrades[2].level,
-                3: window.upgrades[3].level
+                1: window.gameState.upgradeLevels[1],
+                2: window.gameState.upgradeLevels[2],
+                3: window.gameState.upgradeLevels[3]
             }
         };
         localStorage.setItem('clicker_game_save_final', JSON.stringify(rawData));
@@ -76,19 +169,19 @@ window.loadGame = function() {
 
         if (payload.upgradeLevels) {
             for (let id in payload.upgradeLevels) {
-                if (window.upgrades && window.upgrades[id]) {
-                    window.upgrades[id].level = Number(payload.upgradeLevels[id]) || 0;
+                if (window.gameState.upgradeLevels.hasOwnProperty(id)) {
+                    window.gameState.upgradeLevels[id] = Number(payload.upgradeLevels[id]) || 0;
                 }
             }
         }
     } catch (error) {
-        console.error("Архив сохранений поврежден, сброс кэша:", error);
+        console.error("Архив сохранений поврежден:", error);
         localStorage.removeItem('clicker_game_save_final');
     }
 };
 
 // ==========================================
-// 5. ИНТЕРФЕЙС И РЕНДЕРИНГ (UI ENGINE)
+// 🔄 ОБНОВЛЕНИЕ UI И НАВИГАЦИЯ
 // ==========================================
 window.updateUI = function() {
     const currentCurrency = window.gameState.selectedCurrency;
@@ -119,120 +212,27 @@ window.updateUI = function() {
         uiCpowerEl.innerText = (window.calculateClickPower() * rate).toFixed(2);
     }
 
+    // Рендер уровней и экспоненциальных цен строго по ID
     for (let id in window.upgrades) {
         const item = window.upgrades[id];
         if (!item) continue;
 
-        const currentPrice = Math.floor(item.basePrice * Math.pow(item.priceMultiplier, item.level));
+        const currentLvl = window.gameState.upgradeLevels[id] || 0;
+        const currentPrice = Math.floor(item.basePrice * Math.pow(item.priceMultiplier, currentLvl));
         const levelEl = document.getElementById(`upgrade-level-${id}`);
         const priceEl = document.getElementById(`upgrade-price-${id}`);
 
-        if (levelEl) levelEl.innerText = `Lvl ${item.level}`;
+        if (levelEl) levelEl.innerText = `Lvl ${currentLvl}`;
         if (priceEl) priceEl.innerText = `${(currentPrice * rate).toFixed(0)} ${currentCurrency}`;
     }
-};
 
-window.createFloatingText = function(text) {
-    const container = document.querySelector('.click-area');
-    if (!container) return;
-
-    const badge = document.createElement('span');
-    badge.classList.add('floating-number');
-    badge.innerText = text;
-
-    badge.style.left = `${40 + Math.random() * 20}%`;
-    badge.style.top = `${40 + Math.random() * 20}%`;
-
-    container.appendChild(badge);
-    setTimeout(() => badge.remove(), 800);
-};
-
-// ==========================================
-// 6. ИГРОВЫЕ ДЕЙСТВИЯ (ACTION HANDLERS)
-// ==========================================
-window.startLaborShift = function() {
-    const power = window.calculateClickPower();
-    window.gameState.balance += power;
-
-    const rate = window.gameState.currencyRates[window.gameState.selectedCurrency] || 1;
-    window.createFloatingText(`+${(power * rate).toFixed(1)} ${window.gameState.selectedCurrency}`);
-    
-    window.updateUI();
-};
-
-window.buyUpgrade = function(upgradeId) {
-    const item = window.upgrades[upgradeId];
-    if (!item) return;
-
-    const price = Math.floor(item.basePrice * Math.pow(item.priceMultiplier, item.level));
-
-    if (window.gameState.balance >= price) {
-        window.gameState.balance -= price;
-        item.level += 1;
-        window.updateUI();
-        window.saveGame();
-    } else {
-        alert("Недостаточно средств для покупки!");
-    }
-};
-
-window.playCasino = function(betAmount) {
-    const statusEl = document.getElementById('casino-result');
-    if (window.gameState.balance < betAmount) {
-        if (statusEl) statusEl.innerText = "Недостаточно средств!";
-        return;
-    }
-
-    window.gameState.balance -= betAmount;
-    const win = Math.random() > 0.5;
-
-    if (win) {
-        const prize = betAmount * 2;
-        window.gameState.balance += prize;
-        if (statusEl) {
-            statusEl.innerText = `Победа! +${prize} USD`;
-            statusEl.style.color = "#00ff88";
-        }
-    } else {
-        if (statusEl) {
-            statusEl.innerText = `Проигрыш! -${betAmount} USD`;
-            statusEl.style.color = "#ff5500";
-        }
-    }
-    window.updateUI();
-    window.saveGame();
-};
-
-window.tradeCrypto = function(action) {
-    const volume = 0.01;
-    const cost = window.gameState.cryptoPrice * volume;
-    const statusEl = document.getElementById('exchange-status');
-
-    if (action === 'buy') {
-        if (window.gameState.balance >= cost) {
-            window.gameState.balance -= cost;
-            window.gameState.cryptoBalance += volume;
-            if (statusEl) statusEl.innerText = `Куплено ${volume} BTC`;
-        } else {
-            if (statusEl) statusEl.innerText = "Недостаточно USD!";
-        }
-    } else if (action === 'sell') {
-        if (window.gameState.cryptoBalance >= volume) {
-            window.gameState.cryptoBalance -= volume;
-            window.gameState.balance += cost;
-            if (statusEl) statusEl.innerText = `Продано ${volume} BTC`;
-        } else {
-            if (statusEl) statusEl.innerText = "Недостаточно BTC!";
-        }
-    }
-    window.updateUI();
-    window.saveGame();
+    window.generateLeaderboard();
 };
 
 window.changeCurrency = function(currencyCode) {
     if (window.gameState.currencyRates[currencyCode]) {
         window.gameState.selectedCurrency = currencyCode;
-
+        
         document.querySelectorAll('.selector-btn').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById(`curr-btn-${currencyCode}`);
         if (activeBtn) activeBtn.classList.add('active');
@@ -244,39 +244,22 @@ window.changeCurrency = function(currencyCode) {
 
 window.switchTab = function(tabId) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
     const targetTab = document.getElementById(tabId);
     if (targetTab) targetTab.classList.add('active');
 
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById(`nav-btn-${tabId.replace('tab-', '')}`);
-    if (activeBtn) activeBtn.classList.add('active');
+    const cleanId = tabId.replace('tab-', '');
+    const targetBtn = document.getElementById(`nav-btn-${cleanId}`);
+    if (targetBtn) targetBtn.classList.add('active');
 };
 
-window.copyInviteLink = function() {
-    const inviteUrl = `https://t.me{Math.floor(100000 + Math.random() * 899999)}`;
-    navigator.clipboard.writeText(inviteUrl)
-        .then(() => alert(`Ссылка скопирована: ${inviteUrl}`))
-        .catch(() => alert(`Не удалось скопировать. Ссылка: ${inviteUrl}`));
-};
+window.createFloatingText = function(text) {
+    const container = document.querySelector('.click-area');
+    if (!container) return;
 
-// ==========================================
-// 7. ОРКЕСТРАТОР И СЕРВИСНЫЕ ТАЙМЕРЫ (LOOPS)
-// ==========================================
-document.addEventListener('DOMContentLoaded', function() {
-    window.loadGame();
-    window.updateUI();
+    const badge = document.createElement('span');
+    badge.classList.add('floating-number');
+    badge.innerText = text;
 
-    // Пассивный доход раз в секунду
-    setInterval(function() {
-        const incomePerSecond = window.calculatePassiveIncome();
-        if (incomePerSecond > 0) {
-            window.gameState.balance += incomePerSecond;
-            window.updateUI();
-        }
-    }, 1000);
-
-    // Автосохранение раз в 3 секунды
-    setInterval(function() {
-        window.saveGame();
-    }, 3000);
-});
+    badge.style.left = `${40 + Math.random() * 20}%`;}

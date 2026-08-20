@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tycoon & Labor Market</title>
-    <!-- ИСПРАВЛЕНО: Прямое подключение стилей без папки css -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -132,6 +131,18 @@
             </section>
         </main>
 
+        <!-- ВСТРОЕННАЯ ВКЛАДКА 6: ЛИДЕРБОРД И ЛИГИ -->
+        <main id="tab-leaderboard" class="tab-content">
+            <section class="leaderboard-section">
+                <h2 id="league-title">Загрузка лиги...</h2>
+                <div class="leaderboard-container">
+                    <div id="leaderboard-list">
+                        <!-- Динамические строки лиги генерируются здесь через JS -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
         <!-- ТАБ-БАР НАВИГАЦИИ -->
         <nav class="nav-bar">
             <button id="nav-btn-market" class="nav-btn active" onclick="window.switchTab('tab-market')">Биржа</button>
@@ -139,10 +150,10 @@
             <button id="nav-btn-crypto" class="nav-btn" onclick="window.switchTab('tab-crypto')">Трейдинг</button>
             <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
             <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
+            <button id="nav-btn-leaderboard" class="nav-btn" onclick="window.switchTab('tab-leaderboard')">Топ</button>
         </nav>
     </div>
 
-    <!-- ИСПРАВЛЕНО: Прямое подключение скрипта без папки js -->
     <script src="app.js"></script>
 </body>
 </html>

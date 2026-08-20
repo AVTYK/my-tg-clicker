@@ -23,7 +23,7 @@ window.gameState = {
     }
 };
 
-// БАЗА ДАННЫХ УЛУЧШЕНИЙ (СВОЙСТВО .level ИСКЛЮЧЕНО)
+// БАЗА ДАННЫХ УЛУЧШЕНИЙ (СВОЙСТВО .level ИСКЛЮЧЕНО ПО ТЗ)
 window.upgrades = {
     1: { name: "Business Click", basePrice: 10, priceMultiplier: 1.5, power: 1 },
     2: { name: "Crypto Farm", basePrice: 100, priceMultiplier: 1.8, power: 5 },
@@ -33,16 +33,17 @@ window.upgrades = {
 const playerNames = ["CryptoKing", "Satoshi_99", "MemeLord", "Elon_Fan", "ClickMaster", "DiamondHands", "Pavel_D", "Whale_🐋", "BullRunner", "BearHunter", "HODLer", "ToniK", "CyberPank", "Alpha_Z"];
 
 // ==========================================
-// 🧮 МАТЕМАТИЧЕСКИЕ РАСЧЕТЫ ДОХОДА
+// 🧮 ИСПРАВЛЕННЫЕ МАТЕМАТИЧЕСКИЕ РАСЧЕТЫ
 // ==========================================
 window.calculateClickPower = function() {
-    if (!window.upgrades || !window.gameState.upgradeLevels) return 1;
+    if (!window.upgrades || !window.upgrades[1] || !window.gameState.upgradeLevels) return 1;
     const currentLvl = window.gameState.upgradeLevels[1] || 0;
-    return 1 + (currentLvl * window.upgrades[1].power);
+    const upgradePower = window.upgrades[1].power || 1;
+    return 1 + (currentLvl * upgradePower);
 };
 
 window.calculatePassiveIncome = function() {
-    if (!window.upgrades || !window.gameState.upgradeLevels) return 0;
+    if (!window.upgrades || !window.upgrades[2] || !window.upgrades[3] || !window.gameState.upgradeLevels) return 0;
     const farmLvl = window.gameState.upgradeLevels[2] || 0;
     const bankLvl = window.gameState.upgradeLevels[3] || 0;
     const farmIncome = farmLvl * window.upgrades[2].power;
@@ -68,16 +69,12 @@ window.generateLeaderboard = function() {
     if (balance >= 500000) {
         leagueName = 'Платиновая лига (Топ 10)';
         startRank = Math.max(2, Math.floor(10 - (balance - 500000) / 100000));
+    } else if (balance >= 50000) {
+        leagueName = 'Золотая лига (Топ 1000)';
+        startRank = Math.max(11, Math.floor(1000 - (balance - 50000) / 500));
     } else if (balance >= 5000) {
-        if (balance >= 5000) {
-            if (balance >= 50000) {
-                leagueName = 'Золотая лига (Топ 1000)';
-                startRank = Math.max(11, Math.floor(1000 - (balance - 50000) / 500));
-            } else {
-                leagueName = 'Серебряная лига (Топ 3000)';
-                startRank = Math.max(1001, Math.floor(3000 - (balance - 5000) / 20));
-            }
-        }
+        leagueName = 'Серебряная лига (Топ 3000)';
+        startRank = Math.max(1001, Math.floor(3000 - (balance - 5000) / 20));
     } else {
         leagueName = 'Бронзовая лига (Топ 5000)';
         startRank = Math.max(3001, Math.floor(5000 - balance / 2));
@@ -262,4 +259,3 @@ window.createFloatingText = function(text) {
     badge.classList.add('floating-number');
     badge.innerText = text;
 
-    badge.style.left = `${40 + Math.random() * 20}%`;}

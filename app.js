@@ -33,21 +33,30 @@ window.upgrades = {
 const playerNames = ["CryptoKing", "Satoshi_99", "MemeLord", "Elon_Fan", "ClickMaster", "DiamondHands", "Pavel_D", "Whale_🐋", "BullRunner", "BearHunter", "HODLer", "ToniK", "CyberPank", "Alpha_Z"];
 
 // ==========================================
-// 🧮 МАТЕМАТИЧЕСКИЕ РАСЧЕТЫ
+// 🧮 ИСПРАВЛЕННЫЕ МАТЕМАТИЧЕСКИЕ РАСЧЕТЫ
 // ==========================================
 window.calculateClickPower = function() {
     if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return 1;
+    
+    // Получаем уровень и мощность строго по ID-ключу 1 (Business Click)
     const currentLvl = window.gameState.upgradeLevels[1] || 0;
-    const upgradePower = window.upgrades[1].power || 1;
+    const upgradePower = window.upgrades[1] ? (window.upgrades[1].power || 1) : 1;
+    
     return 1 + (currentLvl * upgradePower);
 };
 
 window.calculatePassiveIncome = function() {
     if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return 0;
+    
+    // Считаем доход строго по ID-ключам 2 (Crypto Farm) и 3 (Bank Network)
     const farmLvl = window.gameState.upgradeLevels[2] || 0;
+    const farmPower = window.upgrades[2] ? (window.upgrades[2].power || 0) : 0;
+    const farmIncome = farmLvl * farmPower;
+    
     const bankLvl = window.gameState.upgradeLevels[3] || 0;
-    const farmIncome = farmLvl * window.upgrades[2].power;
-    const bankIncome = bankLvl * window.upgrades[3].power;
+    const bankPower = window.upgrades[3] ? (window.upgrades[3].power || 0) : 0;
+    const bankIncome = bankLvl * bankPower;
+    
     return farmIncome + bankIncome;
 };
 
@@ -251,17 +260,4 @@ window.switchTab = function(tabId) {
 window.createFloatingText = function(text) {
     const container = document.querySelector('.click-area');
     if (!container) return;
-
-    const badge = document.createElement('span');
-    badge.classList.add('floating-number');
-    badge.innerText = text;
-
-    badge.style.left = `${40 + Math.random() * 20}%`;
-    badge.style.top = `${40 + Math.random() * 20}%`;
-
-    container.appendChild(badge);
-    setTimeout(function() { 
-        badge.remove(); 
-    }, 800);
-};
-
+}

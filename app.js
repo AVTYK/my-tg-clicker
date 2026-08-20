@@ -38,7 +38,6 @@ const playerNames = ["CryptoKing", "Satoshi_99", "MemeLord", "Elon_Fan", "ClickM
 window.calculateClickPower = function() {
     if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return 1;
     
-    // Получаем уровень и мощность строго по ID-ключу 1 (Business Click)
     const currentLvl = window.gameState.upgradeLevels[1] || 0;
     const upgradePower = window.upgrades[1] ? (window.upgrades[1].power || 1) : 1;
     
@@ -48,7 +47,6 @@ window.calculateClickPower = function() {
 window.calculatePassiveIncome = function() {
     if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return 0;
     
-    // Считаем доход строго по ID-ключам 2 (Crypto Farm) и 3 (Bank Network)
     const farmLvl = window.gameState.upgradeLevels[2] || 0;
     const farmPower = window.upgrades[2] ? (window.upgrades[2].power || 0) : 0;
     const farmIncome = farmLvl * farmPower;
@@ -141,17 +139,13 @@ window.generateLeaderboard = function() {
 // ==========================================
 window.saveGame = function() {
     try {
-        if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return;
+        if (!window.gameState || !window.gameState.upgradeLevels) return;
         
         const rawData = {
             balance: window.gameState.balance,
             cryptoBalance: window.gameState.cryptoBalance,
             selectedCurrency: window.gameState.selectedCurrency,
-            upgradeLevels: {
-                1: window.gameState.upgradeLevels[1],
-                2: window.gameState.upgradeLevels[2],
-                3: window.gameState.upgradeLevels[3]
-            }
+            upgradeLevels: window.gameState.upgradeLevels
         };
         localStorage.setItem('clicker_game_save_final', JSON.stringify(rawData));
     } catch (error) {
@@ -253,11 +247,25 @@ window.switchTab = function(tabId) {
     if (targetTab) targetTab.classList.add('active');
 
     const cleanId = tabId.replace('tab-', '');
-    const targetBtn = document.getElementById(`nav-btn-${cleanId}`);
+   const targetBtn = document.getElementById(`nav-btn-${cleanId}`);
     if (targetBtn) targetBtn.classList.add('active');
 };
 
 window.createFloatingText = function(text) {
     const container = document.querySelector('.click-area');
     if (!container) return;
-}
+
+    const badge = document.createElement('span');
+    badge.classList.add('floating-number');
+    badge.innerText = text;
+
+    badge.style.left = `${40 + Math.random() * 20}%`;
+    badge.style.top = `${40 + Math.random() * 20}%`;
+
+    container.appendChild(badge);
+    
+    // Элемент плавно удалится через 1 секунду (1000 миллисекунд)
+    setTimeout(function() {
+        badge.remove();
+    }, 1000);
+};

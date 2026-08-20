@@ -236,16 +236,20 @@ window.onload = function() {
 // СОХРАНЕНИЕ И ЗАГРУЗКА (LOCAL STORAGE)
 // ==========================================
 window.saveGame = function() {
-    const saveData = {
-        gameState: window.gameState,
-        // Сохраняем только уровни апгрейдов, чтобы не дублировать статику
-        upgrades: {
-            1: window.upgrades[1].level,
-            2: window.upgrades[2].level,
-            3: window.upgrades[3].level
-        }
-    };
-    localStorage.setItem('clicker_game_save', JSON.stringify(saveData));
+    try {
+        const saveData = {
+            gameState: window.gameState,
+            // ИСПРАВЛЕНО: Теперь берем уровни строго по ключам ID [1], [2], [3]
+            upgrades: {
+                1: window.upgrades[1] ? window.upgrades[1].level : 0,
+                2: window.upgrades[2] ? window.upgrades[2].level : 0,
+                3: window.upgrades[3] ? window.upgrades[3].level : 0
+            }
+        };
+        localStorage.setItem('clicker_game_save', JSON.stringify(saveData));
+    } catch (error) {
+        console.error("Не удалось сохранить игру:", error);
+    }
 };
 
 window.loadGame = function() {
@@ -272,6 +276,7 @@ window.loadGame = function() {
         console.error("Ошибка при загрузке сохранения:", e);
     }
 };
+
 // === КОНЕЦ ВАШЕГО ФАЙЛА ===
 
 // Вызываем загрузку и обновление UI при старте скрипта

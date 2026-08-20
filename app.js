@@ -33,17 +33,17 @@ window.upgrades = {
 const playerNames = ["CryptoKing", "Satoshi_99", "MemeLord", "Elon_Fan", "ClickMaster", "DiamondHands", "Pavel_D", "Whale_🐋", "BullRunner", "BearHunter", "HODLer", "ToniK", "CyberPank", "Alpha_Z"];
 
 // ==========================================
-// 🧮 ИСПРАВЛЕННЫЕ МАТЕМАТИЧЕСКИЕ РАСЧЕТЫ
+// 🧮 МАТЕМАТИЧЕСКИЕ РАСЧЕТЫ
 // ==========================================
 window.calculateClickPower = function() {
-    if (!window.upgrades || !window.upgrades[1] || !window.gameState.upgradeLevels) return 1;
+    if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return 1;
     const currentLvl = window.gameState.upgradeLevels[1] || 0;
     const upgradePower = window.upgrades[1].power || 1;
     return 1 + (currentLvl * upgradePower);
 };
 
 window.calculatePassiveIncome = function() {
-    if (!window.upgrades || !window.upgrades[2] || !window.upgrades[3] || !window.gameState.upgradeLevels) return 0;
+    if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return 0;
     const farmLvl = window.gameState.upgradeLevels[2] || 0;
     const bankLvl = window.gameState.upgradeLevels[3] || 0;
     const farmIncome = farmLvl * window.upgrades[2].power;
@@ -65,7 +65,6 @@ window.generateLeaderboard = function() {
     let startRank = 5000;
     const displayCount = 7; 
 
-    // Градации лиг по ТЗ игрока (проверка в эталонных USD)
     if (balance >= 500000) {
         leagueName = 'Платиновая лига (Топ 10)';
         startRank = Math.max(2, Math.floor(10 - (balance - 500000) / 100000));
@@ -98,7 +97,6 @@ window.generateLeaderboard = function() {
         const row = document.createElement('div');
         row.classList.add('leaderboard-item');
         
-        // Подсветка строки игрока
         if (itemRank === startRank) {
             row.classList.add('user-row');
             row.style.background = 'rgba(0, 255, 136, 0.15)';
@@ -134,7 +132,7 @@ window.generateLeaderboard = function() {
 // ==========================================
 window.saveGame = function() {
     try {
-        if (!window.upgrades || !window.gameState.upgradeLevels) return;
+        if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return;
         
         const rawData = {
             balance: window.gameState.balance,
@@ -209,7 +207,6 @@ window.updateUI = function() {
         uiCpowerEl.innerText = (window.calculateClickPower() * rate).toFixed(2);
     }
 
-    // Рендер уровней и экспоненциальных цен строго по ID
     for (let id in window.upgrades) {
         const item = window.upgrades[id];
         if (!item) continue;
@@ -258,4 +255,13 @@ window.createFloatingText = function(text) {
     const badge = document.createElement('span');
     badge.classList.add('floating-number');
     badge.innerText = text;
+
+    badge.style.left = `${40 + Math.random() * 20}%`;
+    badge.style.top = `${40 + Math.random() * 20}%`;
+
+    container.appendChild(badge);
+    setTimeout(function() { 
+        badge.remove(); 
+    }, 800);
+};
 

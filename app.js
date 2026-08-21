@@ -69,7 +69,16 @@ window.updateUI = function() {
         if (priceEl) {
             priceEl.innerText = `${(currentPrice * rate).toFixed(0)} ${window.gameState.selectedCurrency}`;
         }
-    }
+    }window.calculateClickPower = function() {
+    return 1 + (window.upgrades[1].level * window.upgrades[1].power);
+};
+
+window.calculatePassiveIncome = function() {
+    const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
+    const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
+    return incomeFromMining + incomeFromBusiness;
+};
+
 
     window.updateLeaderboard();
 };
@@ -290,3 +299,93 @@ window.playCasino = function(betAmount) {
     window.updateUI();
 };
 
+window.buyUpgrade = function(upgradeId) {
+    const upgrade = window.upgrades[upgradeId];
+    if (!upgrade) return;
+
+    const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
+
+    if (window.gameState.balance >= currentPrice) {
+        window.gameState.balance -= currentPrice;
+        upgrade.level += 1;
+        window.updateUI();
+    } else {
+        alert("Недостаточно USD для покупки улучшения!");
+    }
+};
+
+window.tradeCrypto = function(action) {
+    const tradeVolume = 0.01;
+    const costInUSD = window.gameState.cryptoPrice * tradeVolume;
+    const statusEl = document.getElementById('exchange-status');
+
+    if (action === 'buy') {
+        if (window.gameState.balance >= costInUSD) {
+            window.gameState.balance -= costInUSD;
+            window.gameState.cryptoBalance += tradeVolume;
+            if (statusEl) statusEl.innerText = `Куплено ${tradeVolume} BTC`;
+        } else {
+            if (statusEl) statusEl.innerText = "Недостаточно USD!";
+        }
+    } else if (action === 'sell') {
+        if (window.gameState.cryptoBalance >= tradeVolume) {
+            window.gameState.cryptoBalance -= tradeVolume;
+            window.gameState.balance += costInUSD;
+            if (statusEl) statusEl.innerText = `Продано ${tradeVolume} BTC`;
+        } else {
+            if (statusEl) statusEl.innerText = "Недостаточно BTC на балансе!";
+        }
+    }
+    window.updateUI();
+};
+
+window.startLaborShift = function() {
+    const clickPower = window.calculateClickPower();
+    window.gameState.balance += clickPower;
+    
+    const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
+    const displayText = "+" + (clickPower * rate).toFixed(1) + " " + window.gameState.selectedCurrency;
+    window.createFloatingText(displayText);
+    
+    window.updateUI();
+};
+
+window.copyInviteLink = function() {
+    const dummyUrl = "https://t.me" + Math.floor(Math.random() * 899999 + 100000);
+    navigator.clipboard.writeText(dummyUrl).then(function() {
+        alert("Ссылка копирована: " + dummyUrl);
+    }).catch(function() {
+        alert("Ошибка копирования. Ссылка: " + dummyUrl);
+    });
+};
+
+// ==========================================
+// 5. ИНИЦИАЛИЗАЦИЯ И ИГРОВЫЕ ЦИКЛЫ (GAME TIMERS)
+// ==========================================
+window.onload = function() {
+    window.initMockLeaderboard();
+    window.updateUI();
+
+    setInterval(function() {
+        const passiveIncome = window.calculatePassiveIncome();
+        if (passiveIncome > 0) {
+            window.gameState.balance += passiveIncome;
+        }
+        
+        const priceChangePercent = (Math.random() * 5 - 2.5) / 100;
+        window.gameState.cryptoPrice += window.gameState.cryptoPrice * priceChangePercent;
+        if (window.gameState.cryptoPrice < 5000) {
+            window.gameState.cryptoPrice = 5000;
+        }
+
+        window.gameState.mockLeaderboard.forEach(function(bot) {
+            bot.balanceUSD += Math.floor(Math.random() * 150 - 50);
+        });
+
+        window.gameState.mockLeaderboard.sort(function(a, b) {
+            return b.balanceUSD - a.balanceUSD;
+        });
+
+        window.updateUI();
+    }, 1000);
+};

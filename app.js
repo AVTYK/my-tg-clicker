@@ -1,193 +1,38 @@
 // ==========================================
-// 🕹️ ГЛОБАЛЬНОЕ СОСТОЯНИЕ ИГРЫ (STATE)
+// 1. СОСТОЯНИЕ ИГРЫ (STATE)
 // ==========================================
 window.gameState = {
     balance: 0, 
-    cryptoBalance: 0,
-    selectedCurrency: 'USD',
+    cryptoBalance: 0, 
+    selectedCurrency: 'USD', 
     currencyRates: {
         USD: 1,
         EUR: 0.92,
         RUB: 90
     },
     cryptoPrice: 50000,
-    leaderboard: {
-        currentLeague: 'Бронза',
-        userRank: 5000
-    },
-    // КРИТИЧЕСКАЯ АРХИТЕКТУРА: Уровни вынесены в стейт под числовые ID-ключи
-    upgradeLevels: {
-        1: 0,
-        2: 0,
-        3: 0
-    }
+    mockLeaderboard: []
 };
 
-// БАЗА ДАННЫХ УЛУЧШЕНИЙ (СВОЙСТВО .level ИСКЛЮЧЕНО ПО ТЗ)
+// ==========================================
+// 2. БАЗА ДАННЫХ УЛУЧШЕНИЙ (UPGRADES)
+// ==========================================
 window.upgrades = {
-    1: { name: "Business Click", basePrice: 10, priceMultiplier: 1.5, power: 1 },
-    2: { name: "Crypto Farm", basePrice: 100, priceMultiplier: 1.8, power: 5 },
-    3: { name: "Bank Network", basePrice: 1000, priceMultiplier: 2.0, power: 25 }
-};
-
-const playerNames = ["CryptoKing", "Satoshi_99", "MemeLord", "Elon_Fan", "ClickMaster", "DiamondHands", "Pavel_D", "Whale_🐋", "BullRunner", "BearHunter", "HODLer", "ToniK", "CyberPank", "Alpha_Z"];
-
-// ==========================================
-// 🧮 ИСПРАВЛЕННЫЕ МАТЕМАТИЧЕСКИЕ РАСЧЕТЫ
-// ==========================================
-window.calculateClickPower = function() {
-    if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return 1;
-    
-    const currentLvl = window.gameState.upgradeLevels[1] || 0;
-    const upgradePower = window.upgrades[1] ? (window.upgrades[1].power || 1) : 1;
-    
-    return 1 + (currentLvl * upgradePower);
-};
-
-window.calculatePassiveIncome = function() {
-    if (!window.upgrades || !window.gameState || !window.gameState.upgradeLevels) return 0;
-    
-    const farmLvl = window.gameState.upgradeLevels[2] || 0;
-    const farmPower = window.upgrades[2] ? (window.upgrades[2].power || 0) : 0;
-    const farmIncome = farmLvl * farmPower;
-    
-    const bankLvl = window.gameState.upgradeLevels[3] || 0;
-    const bankPower = window.upgrades[3] ? (window.upgrades[3].power || 0) : 0;
-    const bankIncome = bankLvl * bankPower;
-    
-    return farmIncome + bankIncome;
+    1: { name: "Business Click", basePrice: 10, priceMultiplier: 1.5, level: 0, power: 1 },
+    2: { name: "Crypto Farm", basePrice: 100, priceMultiplier: 1.8, level: 0, power: 5 },
+    3: { name: "Bank Network", basePrice: 1000, priceMultiplier: 2.0, level: 0, power: 25 }
 };
 
 // ==========================================
-// 🏆 СИСТЕМА ЛИГ И ДИНАМИЧЕСКИХ БОТОВ
-// ==========================================
-window.generateLeaderboard = function() {
-    const listContainer = document.getElementById('leaderboard-list');
-    if (!listContainer) return;
-
-    listContainer.innerHTML = ''; 
-
-    const balance = window.gameState.balance;
-    let leagueName = 'Бронзовая лига';
-    let startRank = 5000;
-    const displayCount = 7; 
-
-    if (balance >= 500000) {
-        leagueName = 'Платиновая лига (Топ 10)';
-        startRank = Math.max(2, Math.floor(10 - (balance - 500000) / 100000));
-    } else if (balance >= 50000) {
-        leagueName = 'Золотая лига (Топ 1000)';
-        startRank = Math.max(11, Math.floor(1000 - (balance - 50000) / 500));
-    } else if (balance >= 5000) {
-        leagueName = 'Серебряная лига (Топ 3000)';
-        startRank = Math.max(1001, Math.floor(3000 - (balance - 5000) / 20));
-    } else {
-        leagueName = 'Бронзовая лига (Топ 5000)';
-        startRank = Math.max(3001, Math.floor(5000 - balance / 2));
-    }
-
-    window.gameState.leaderboard.currentLeague = leagueName;
-    window.gameState.leaderboard.userRank = startRank;
-
-    const leagueTitleEl = document.getElementById('league-title');
-    if (leagueTitleEl) {
-        leagueTitleEl.innerText = leagueName;
-    }
-
-    const rate = window.gameState.currencyRates[window.gameState.selectedCurrency] || 1;
-    const currentCurrency = window.gameState.selectedCurrency;
-
-    for (let i = 0; i < displayCount; i++) {
-        const itemRank = startRank - 3 + i;
-        if (itemRank <= 0) continue; 
-
-        const row = document.createElement('div');
-        row.classList.add('leaderboard-item');
-        
-        if (itemRank === startRank) {
-            row.classList.add('user-row');
-            row.style.background = 'rgba(0, 255, 136, 0.15)';
-            row.style.fontWeight = 'bold';
-        }
-
-        let displayValue = "";
-        if (itemRank === startRank) {
-            displayValue = `${(window.gameState.balance * rate).toFixed(2)} ${currentCurrency}`;
-        } else {
-            const fakeBalance = window.gameState.balance + (startRank - itemRank) * (balance * 0.1 + 50);
-            displayValue = `${(Math.max(0, fakeBalance) * rate).toFixed(2)} ${currentCurrency}`;
-        }
-
-        const name = (itemRank === startRank) ? "Вы" : (playerNames[(itemRank % playerNames.length)] + "_" + itemRank);
-
-        row.innerHTML = `
-            <span class="rank">#${itemRank}</span>
-            <span class="name">${name}</span>
-            <span class="score">${displayValue}</span>
-        `;
-        row.style.display = 'flex';
-        row.style.justifyContent = 'space-between';
-        row.style.padding = '8px 12px';
-        row.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
-
-        listContainer.appendChild(row);
-    }
-};
-
-// ==========================================
-// 💾 СИСТЕМА LOCALSTORAGE И СОХРАНЕНИЯ
-// ==========================================
-window.saveGame = function() {
-    try {
-        if (!window.gameState || !window.gameState.upgradeLevels) return;
-        
-        const rawData = {
-            balance: window.gameState.balance,
-            cryptoBalance: window.gameState.cryptoBalance,
-            selectedCurrency: window.gameState.selectedCurrency,
-            upgradeLevels: window.gameState.upgradeLevels
-        };
-        localStorage.setItem('clicker_game_save_final', JSON.stringify(rawData));
-    } catch (error) {
-        console.error("Критическая ошибка сохранения:", error);
-    }
-};
-
-window.loadGame = function() {
-    try {
-        const serialized = localStorage.getItem('clicker_game_save_final');
-        if (!serialized) return;
-
-        const payload = JSON.parse(serialized);
-        if (!payload) return;
-
-        if (typeof payload.balance === 'number') window.gameState.balance = payload.balance;
-        if (typeof payload.cryptoBalance === 'number') window.gameState.cryptoBalance = payload.cryptoBalance;
-        if (payload.selectedCurrency) window.gameState.selectedCurrency = payload.selectedCurrency;
-
-        if (payload.upgradeLevels) {
-            for (let id in payload.upgradeLevels) {
-                if (window.gameState.upgradeLevels.hasOwnProperty(id)) {
-                    window.gameState.upgradeLevels[id] = Number(payload.upgradeLevels[id]) || 0;
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Архив сохранений поврежден:", error);
-        localStorage.removeItem('clicker_game_save_final');
-    }
-};
-
-// ==========================================
-// 🔄 ОБНОВЛЕНИЕ UI И НАВИГАЦИЯ
+// 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (UTILS)
 // ==========================================
 window.updateUI = function() {
-    const currentCurrency = window.gameState.selectedCurrency;
-    const rate = window.gameState.currencyRates[currentCurrency] || 1;
-
+    const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
+    const convertedBalance = (window.gameState.balance * rate).toFixed(2);
+    
     const balanceUsdEl = document.getElementById('balance-usd');
     if (balanceUsdEl) {
-        balanceUsdEl.innerText = `${(window.gameState.balance * rate).toFixed(2)} ${currentCurrency}`;
+        balanceUsdEl.innerText = `${convertedBalance} ${window.gameState.selectedCurrency}`;
     }
 
     const balanceBtcEl = document.getElementById('balance-btc');
@@ -197,7 +42,8 @@ window.updateUI = function() {
 
     const liveRateEl = document.getElementById('live-rate');
     if (liveRateEl) {
-        liveRateEl.innerText = `${(window.gameState.cryptoPrice * rate).toFixed(2)} ${currentCurrency}`;
+        const convertedCryptoPrice = (window.gameState.cryptoPrice * rate).toFixed(2);
+        liveRateEl.innerText = `${convertedCryptoPrice} ${window.gameState.selectedCurrency}`;
     }
 
     const uiPincomeEl = document.getElementById('ui-pincome');
@@ -211,61 +57,239 @@ window.updateUI = function() {
     }
 
     for (let id in window.upgrades) {
-        const item = window.upgrades[id];
-        if (!item) continue;
-
-        const currentLvl = window.gameState.upgradeLevels[id] || 0;
-        const currentPrice = Math.floor(item.basePrice * Math.pow(item.priceMultiplier, currentLvl));
+        const upgrade = window.upgrades[id];
+        const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
+        
         const levelEl = document.getElementById(`upgrade-level-${id}`);
         const priceEl = document.getElementById(`upgrade-price-${id}`);
-
-        if (levelEl) levelEl.innerText = `Lvl ${currentLvl}`;
-        if (priceEl) priceEl.innerText = `${(currentPrice * rate).toFixed(0)} ${currentCurrency}`;
+        
+        if (levelEl) {
+            levelEl.innerText = `Lvl ${upgrade.level}`;
+        }
+        if (priceEl) {
+            priceEl.innerText = `${(currentPrice * rate).toFixed(0)} ${window.gameState.selectedCurrency}`;
+        }
     }
 
-    window.generateLeaderboard();
+    window.updateLeaderboard();
+};
+
+window.calculateClickPower = function() {
+    return 1 + (window.upgrades[1].level * window.upgrades[1].power);
+};
+
+window.calculatePassiveIncome = function() {
+    const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
+    const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
+    return incomeFromMining + incomeFromBusiness;
+};
+
+window.createFloatingText = function(text) {
+    const area = document.querySelector('.click-area');
+    if (!area) return;
+
+    const span = document.createElement('span');
+    span.classList.add('floating-number');
+    span.innerText = text;
+    
+    const x = 40 + Math.random() * 20;
+    const y = 40 + Math.random() * 20;
+    
+    span.style.left = `${x}%`;
+    span.style.top = `${y}%`;
+    
+    area.appendChild(span);
+    
+    setTimeout(function() {
+        span.remove();
+    }, 800);
+};
+
+window.initMockLeaderboard = function() {
+    const names = ["CryptoKing", "Satoshi99", "ElonMusketeer", "BullRun", "WhaleWatcher", "DiamondHands", "MinerPro", "HodlGod", "DefiKnight", "BagHolder"];
+    window.gameState.mockLeaderboard = [];
+    
+    for (let i = 0; i < 10; i++) {
+        window.gameState.mockLeaderboard.push({
+            name: names[i] || `User_${Math.floor(Math.random() * 9000 + 1000)}`,
+            balanceUSD: 500000 - (i * 45000) - Math.floor(Math.random() * 5000)
+        });
+    }
+};
+
+window.updateLeaderboard = function() {
+    const currentScore = window.gameState.balance + (window.gameState.cryptoBalance * window.gameState.cryptoPrice);
+    
+    let rank = 2500; 
+    let leagueName = "Бронзовая";
+    let leagueClass = "league-bronze";
+
+    if (currentScore >= 400000) {
+        let tempRank = 11;
+        for (let i = 0; i < window.gameState.mockLeaderboard.length; i++) {
+            if (currentScore > window.gameState.mockLeaderboard[i].balanceUSD) {
+                tempRank = i + 1;
+                break;
+            }
+        }
+        rank = tempRank > 10 ? 10 : tempRank;
+        leagueName = "Бриллиантовая";
+        leagueClass = "league-diamond";
+    } else if (currentScore >= 100000) {
+        rank = Math.max(11, 500 - Math.floor((currentScore - 100000) / 3000 * 489));
+        leagueName = "Золотая";
+        leagueClass = "league-gold";
+    } else if (currentScore >= 25000) {
+        rank = Math.max(501, 1000 - Math.floor((currentScore - 25000) / 75000 * 499));
+        leagueName = "Серебряная";
+        leagueClass = "league-silver";
+    } else {
+        rank = Math.max(1001, 2000 - Math.floor((currentScore) / 25000 * 999));
+        leagueName = "Бронзовая";
+        leagueClass = "league-bronze";
+    }
+
+    const leagueNameEl = document.getElementById('player-league-name');
+    const rankValueEl = document.getElementById('player-rank-value');
+    
+    if (leagueNameEl) {
+        leagueNameEl.innerText = leagueName;
+        leagueNameEl.className = ""; 
+        leagueNameEl.classList.add(leagueClass);
+    }
+    if (rankValueEl) {
+        rankValueEl.innerText = rank;
+    }
+
+    const container = document.getElementById('leaderboard-list');
+    if (!container || !document.getElementById('tab-leaderboard').classList.contains('active')) return;
+
+    let displayList = [];
+    for (let i = 0; i < window.gameState.mockLeaderboard.length; i++) {
+        displayList.push({
+            rank: i + 1,
+            name: window.gameState.mockLeaderboard[i].name,
+            balance: window.gameState.mockLeaderboard[i].balanceUSD,
+            isPlayer: false
+        });
+    }
+
+    if (rank <= 10) {
+        displayList.splice(rank - 1, 0, {
+            rank: rank,
+            name: "Вы (Выигрываете)",
+            balance: currentScore,
+            isPlayer: true
+        });
+        displayList.pop();
+    }
+
+    container.innerHTML = "";
+    
+    if (rank > 10) {
+        const pRow = document.createElement('div');
+        pRow.classList.add('leaderboard-item', 'player-row');
+        pRow.innerHTML = `
+            <span class="lb-rank">#${rank}</span>
+            <span class="lb-name">Вы (Текущая позиция)</span>
+            <span class="lb-balance">${currentScore.toFixed(0)} USD</span>
+        `;
+        container.appendChild(pRow);
+    }
+
+    displayList.forEach(function(item) {
+        let itemLeagueClass = "league-bronze";
+        if (item.rank <= 10) itemLeagueClass = "league-diamond";
+        
+        const row = document.createElement('div');
+        row.classList.add('leaderboard-item');
+        if (item.isPlayer) row.classList.add('player-row');
+        
+        row.innerHTML = `
+            <span class="lb-rank ${itemLeagueClass}">#${item.rank}</span>
+            <span class="lb-name">${item.name}</span>
+            <span class="lb-balance">${item.balance.toFixed(0)} USD</span>
+        `;
+        container.appendChild(row);
+    });
+};
+
+// ==========================================
+// 4. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)
+// ==========================================
+window.switchTab = function(tabId) {
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(function(tab) {
+        tab.classList.remove('active');
+    });
+    
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+
+    const currentBtnId = 'nav-btn-' + tabId.replace('tab-', '');
+    const activeBtn = document.getElementById(currentBtnId);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    window.updateUI();
 };
 
 window.changeCurrency = function(currencyCode) {
     if (window.gameState.currencyRates[currencyCode]) {
         window.gameState.selectedCurrency = currencyCode;
         
-        document.querySelectorAll('.selector-btn').forEach(btn => btn.classList.remove('active'));
-        const activeBtn = document.getElementById(`curr-btn-${currencyCode}`);
-        if (activeBtn) activeBtn.classList.add('active');
+        const selectorButtons = document.querySelectorAll('.selector-btn');
+        selectorButtons.forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        
+        const activeSelectorBtn = document.getElementById('curr-btn-' + currencyCode);
+        if (activeSelectorBtn) {
+            activeSelectorBtn.classList.add('active');
+        }
 
         window.updateUI();
-        window.saveGame();
     }
 };
 
-window.switchTab = function(tabId) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-
-    const targetTab = document.getElementById(tabId);
-    if (targetTab) targetTab.classList.add('active');
-
-    const cleanId = tabId.replace('tab-', '');
-   const targetBtn = document.getElementById(`nav-btn-${cleanId}`);
-    if (targetBtn) targetBtn.classList.add('active');
-};
-
-window.createFloatingText = function(text) {
-    const container = document.querySelector('.click-area');
-    if (!container) return;
-
-    const badge = document.createElement('span');
-    badge.classList.add('floating-number');
-    badge.innerText = text;
-
-    badge.style.left = `${40 + Math.random() * 20}%`;
-    badge.style.top = `${40 + Math.random() * 20}%`;
-
-    container.appendChild(badge);
+window.playCasino = function(betAmount) {
+    const statusEl = document.getElementById('casino-result');
     
-    // Элемент плавно удалится через 1 секунду (1000 миллисекунд)
-    setTimeout(function() {
-        badge.remove();
-    }, 1000);
+    if (window.gameState.balance < betAmount) {
+        if (statusEl) statusEl.innerText = "Недостаточно средств!";
+        return;
+    }
+    
+    window.gameState.balance -= betAmount;
+    const isWin = Math.random() > 0.5;
+    
+    if (isWin) {
+        const winAmount = betAmount * 2;
+        window.gameState.balance += winAmount;
+        if (statusEl) {
+            statusEl.innerText = `Победа! +${winAmount} USD`;
+            statusEl.style.color = "#00ff88";
+        }
+    } else {
+        if (statusEl) {
+            statusEl.innerText = `Проигрыш! -${betAmount} USD`;
+            statusEl.style.color = "#ff5500";
+        }
+    }
+    window.updateUI();
 };
+
+window.buyUpgrade = function(upgradeId) {
+    const upgrade = window.upgrades[upgradeId];
+    if (!upgrade) return;
+
+    const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
+}

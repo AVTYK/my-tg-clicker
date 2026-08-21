@@ -80,86 +80,74 @@ window.calculatePassiveIncome = function() {
 };
 
 
-    window.updateLeaderboard();
-};
-
-window.calculateClickPower = function() {
-    // ПОЛНОСТЬЮ ИСПРАВЛЕНО: Прямое обращение по числовому ID [1] вместо .level
-    return 1 + (window.upgrades[1].level * window.upgrades[1].power);
-};
-
-window.calculatePassiveIncome = function() {
-    // ПОЛНОСТЬЮ ИСПРАВЛЕНО: Прямое обращение по числовым ID [2] и [3] вместо .level
-    const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
-    const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
-    return incomeFromMining + incomeFromBusiness;
-};
-
-window.createFloatingText = function(text) {
-    const area = document.querySelector('.click-area');
-    if (!area) return;
-
-    const span = document.createElement('span');
-    span.classList.add('floating-number');
-    span.innerText = text;
-    
-    const x = 40 + Math.random() * 20;
-    const y = 40 + Math.random() * 20;
-    
-    span.style.left = `${x}%`;
-    span.style.top = `${y}%`;
-    
-    area.appendChild(span);
-    
-    setTimeout(function() {
-        span.remove();
-    }, 800);
-};
-
-window.initMockLeaderboard = function() {
-    const names = ["CryptoKing", "Satoshi99", "ElonMusketeer", "BullRun", "WhaleWatcher", "DiamondHands", "MinerPro", "HodlGod", "DefiKnight", "BagHolder"];
-    window.gameState.mockLeaderboard = [];
-    
-    for (let i = 0; i < 10; i++) {
-        window.gameState.mockLeaderboard.push({
-            name: names[i] || `User_${Math.floor(Math.random() * 9000 + 1000)}`,
-            balanceUSD: 500000 - (i * 45000) - Math.floor(Math.random() * 5000)
-        });
-    }
-};
-
 window.updateLeaderboard = function() {
+    // 1. Рассчитываем общий капитал игрока (USD + BTC по текущему курсу)
     const currentScore = window.gameState.balance + (window.gameState.cryptoBalance * window.gameState.cryptoPrice);
     
-    let rank = 2500; 
+    // 2. Рассчитываем лигу игрока на основе его капитала
     let leagueName = "Бронзовая";
     let leagueClass = "league-bronze";
 
     if (currentScore >= 400000) {
-        let tempRank = 11;
-        for (let i = 0; i < window.gameState.mockLeaderboard.length; i++) {
-            if (currentScore > window.gameState.mockLeaderboard[i].balanceUSD) {
-                tempRank = i + 1;
-                break;
-            }
-        }
-        rank = tempRank > 10 ? 10 : tempRank;
         leagueName = "Бриллиантовая";
         leagueClass = "league-diamond";
     } else if (currentScore >= 100000) {
-        rank = Math.max(11, 500 - Math.floor((currentScore - 100000) / 3000 * 489));
         leagueName = "Золотая";
         leagueClass = "league-gold";
     } else if (currentScore >= 25000) {
-        rank = Math.max(501, 1000 - Math.floor((currentScore - 25000) / 75000 * 499));
         leagueName = "Серебряная";
         leagueClass = "league-silver";
     } else {
-        rank = Math.max(1001, 2000 - Math.floor((currentScore) / 25000 * 999));
         leagueName = "Бронзовая";
         leagueClass = "league-bronze";
     }
 
+    // 3. Соединяем ботов и игрока в один массив для честной сортировки позиций
+    let fullList = [];
+    
+    // Добавляем всех ботов
+    window.gameState.mockLeaderboard.forEach(function(bot) {
+        fullList.push({
+            name: bot.name,
+            balance: bot.balanceUSD,
+            isPlayer: false
+        });
+    });
+
+    // Добавляем живого игрока
+    fullList.push({
+        name: "Вы (Капитал)",
+        balance: currentScore,
+        isPlayer: true
+    });
+
+    // Сортируем весь список по убыванию баланса
+    fullList.sort(function(a, b) {
+        return b.balance - a.balance;
+    });
+
+    // Находим реальное итоговое место игрока в отсортированном списке
+    let playerRank = 1;
+    for (let i = 0; i < fullList.length; i++) {
+        if (fullList[i].isPlayer) {
+            playerRank = i + 1;
+            break;
+        }
+    }
+
+    // 4. Корректируем отображение ранга под ваши правила лиг (если игрок не вошел в топ-10 ботов)
+    let finalRankValue = playerRank;
+    if (playerRank > 10) {
+        if (leagueName === "Золотая") {
+            finalRankValue = Math.max(11, 500 - Math.floor((currentScore - 100000) / 300000 * 489));
+        } else if (leagueName === "Серебряная") {
+            finalRankValue = Math.max(501, 1000 - Math.floor((currentScore - 25000) / 75000 * 499));
+        } else if (leagueName === "Бронзовая") {
+            finalRankValue = Math.max(1001, 2000 - Math.floor((currentScore) / 25000 * 999));
+        }
+    }
+
+    // Обновляем текстовые элементы лиги на экране
     const leagueNameEl = document.getElementById('player-league-name');
     const rankValueEl = document.getElementById('player-rank-value');
     
@@ -169,62 +157,54 @@ window.updateLeaderboard = function() {
         leagueNameEl.classList.add(leagueClass);
     }
     if (rankValueEl) {
-        rankValueEl.innerText = rank;
+        rankValueEl.innerText = finalRankValue;
     }
 
+    // 5. Отрисовка таблицы лидеров на экране (только если вкладка "Топ" активна)
     const container = document.getElementById('leaderboard-list');
     const tabLeaderboard = document.getElementById('tab-leaderboard');
     if (!container || !tabLeaderboard || !tabLeaderboard.classList.contains('active')) return;
 
-    let displayList = [];
-    for (let i = 0; i < window.gameState.mockLeaderboard.length; i++) {
-        displayList.push({
-            rank: i + 1,
-            name: window.gameState.mockLeaderboard[i].name,
-            balance: window.gameState.mockLeaderboard[i].balanceUSD,
-            isPlayer: false
-        });
-    }
-
-    if (rank <= 10) {
-        displayList.splice(rank - 1, 0, {
-            rank: rank,
-            name: "Вы (Выигрываете)",
-            balance: currentScore,
-            isPlayer: true
-        });
-        displayList.pop();
-    }
-
     container.innerHTML = "";
     
-    if (rank > 10) {
+    // Если игрок плетется ниже 10-го места, выводим его текущую позицию отдельной плашкой в самый верх
+    if (playerRank > 10) {
         const pRow = document.createElement('div');
         pRow.classList.add('leaderboard-item', 'player-row');
         pRow.innerHTML = `
-            <span class="lb-rank">#${rank}</span>
+            <span class="lb-rank">#${finalRankValue}</span>
             <span class="lb-name">Вы (Текущая позиция)</span>
             <span class="lb-balance">${currentScore.toFixed(0)} USD</span>
         `;
         container.appendChild(pRow);
     }
 
-    displayList.forEach(function(item) {
+    // Вырезаем ровно первые 10 мест из общего отсортированного массива для показа в таблице
+    const displayTop10 = fullList.slice(0, 10);
+
+    displayTop10.forEach(function(item, index) {
+        const currentItemRank = index + 1;
         let itemLeagueClass = "league-bronze";
-        if (item.rank <= 10) itemLeagueClass = "league-diamond";
+        
+        // Топ-10 — это всегда Бриллиантовая лига
+        if (currentItemRank <= 10) itemLeagueClass = "league-diamond";
         
         const row = document.createElement('div');
         row.classList.add('leaderboard-item');
         if (item.isPlayer) row.classList.add('player-row');
         
+        // Если это строка игрока — пишем его ранг, если бот — его порядковый номер
+        const showRank = item.isPlayer ? finalRankValue : currentItemRank;
+
         row.innerHTML = `
-            <span class="lb-rank ${itemLeagueClass}">#${item.rank}</span>
+            <span class="lb-rank ${itemLeagueClass}">#${showRank}</span>
             <span class="lb-name">${item.name}</span>
             <span class="lb-balance">${item.balance.toFixed(0)} USD</span>
         `;
         container.appendChild(row);
     });
 };
+
 
 // ==========================================
 // 4. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)
@@ -399,4 +379,4 @@ window.onload = function() {
 
         window.updateUI();
     }, 1000);
-};
+};}

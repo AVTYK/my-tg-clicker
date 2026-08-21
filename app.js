@@ -351,7 +351,7 @@ window.startLaborShift = function() {
 };
 
 window.copyInviteLink = function() {
-    const dummyUrl = "https://t.me" + Math.floor(Math.random() * 899999 + 100000);
+    const dummyUrl = "https://t.me"/ + Math.floor(Math.random() * 899999 + 100000);
     navigator.clipboard.writeText(dummyUrl).then(function() {
         alert("Ссылка копирована: " + dummyUrl);
     }).catch(function() {

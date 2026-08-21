@@ -351,13 +351,23 @@ window.startLaborShift = function() {
 };
 
 window.copyInviteLink = function() {
-    const dummyUrl = "https://t.me/" + Math.floor(Math.random() * 899999 + 100000);
+    // Впишите сюда юзернейм вашего бота (без @) и короткое имя приложения из BotFather
+    const botUsername = "CryptoTycoonBot"; // Пример: имя вашего бота
+    const appShortName = "game";           // Пример: короткое имя Mini App
+    
+    // Генерация уникального ID игрока (в будущем здесь будет реальный ID из Telegram.WebApp)
+    const userId = Math.floor(Math.random() * 899999 + 100000);
+    
+    // Официальный формат прямой ссылки на Telegram Mini App с реферальным параметром
+    const dummyUrl = `https://t.me{botUsername}/${appShortName}?startapp=${userId}`;
+    
     navigator.clipboard.writeText(dummyUrl).then(function() {
-        alert("Ссылка копирована: " + dummyUrl);
+        alert("Реферальная ссылка скопирована: " + dummyUrl);
     }).catch(function() {
         alert("Ошибка копирования. Ссылка: " + dummyUrl);
     });
 };
+
 
 // ==========================================
 // 5. ИНИЦИАЛИЗАЦИЯ И ИГРОВЫЕ ЦИКЛЫ (GAME TIMERS)

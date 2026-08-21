@@ -75,14 +75,19 @@ window.updateUI = function() {
 };
 
 window.calculateClickPower = function() {
+    // Улучшение №1 — это сила клика (Business Click)
     return 1 + (window.upgrades[1].level * window.upgrades[1].power);
 };
 
 window.calculatePassiveIncome = function() {
+    // Улучшение №2 — это крипто-ферма (Crypto Farm)
     const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
+    // Улучшение №3 — это банк (Bank Network)
     const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
+    
     return incomeFromMining + incomeFromBusiness;
 };
+
 
 window.createFloatingText = function(text) {
     const area = document.querySelector('.click-area');

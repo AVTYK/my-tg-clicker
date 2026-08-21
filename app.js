@@ -69,7 +69,12 @@ window.updateUI = function() {
         if (priceEl) {
             priceEl.innerText = `${(currentPrice * rate).toFixed(0)} ${window.gameState.selectedCurrency}`;
         }
-    }window.calculateClickPower = function() {
+    }
+
+    window.updateLeaderboard();
+};
+
+window.calculateClickPower = function() {
     return 1 + (window.upgrades[1].level * window.upgrades[1].power);
 };
 
@@ -79,12 +84,42 @@ window.calculatePassiveIncome = function() {
     return incomeFromMining + incomeFromBusiness;
 };
 
+window.createFloatingText = function(text) {
+    const area = document.querySelector('.click-area');
+    if (!area) return;
+
+    const span = document.createElement('span');
+    span.classList.add('floating-number');
+    span.innerText = text;
+    
+    const x = 40 + Math.random() * 20;
+    const y = 40 + Math.random() * 20;
+    
+    span.style.left = `${x}%`;
+    span.style.top = `${y}%`;
+    
+    area.appendChild(span);
+    
+    setTimeout(function() {
+        span.remove();
+    }, 800);
+};
+
+window.initMockLeaderboard = function() {
+    const names = ["CryptoKing", "Satoshi99", "ElonMusketeer", "BullRun", "WhaleWatcher", "DiamondHands", "MinerPro", "HodlGod", "DefiKnight", "BagHolder"];
+    window.gameState.mockLeaderboard = [];
+    
+    for (let i = 0; i < 10; i++) {
+        window.gameState.mockLeaderboard.push({
+            name: names[i] || `User_${Math.floor(Math.random() * 9000 + 1000)}`,
+            balanceUSD: 500000 - (i * 45000) - Math.floor(Math.random() * 5000)
+        });
+    }
+};
 
 window.updateLeaderboard = function() {
-    // 1. Рассчитываем общий капитал игрока (USD + BTC по текущему курсу)
     const currentScore = window.gameState.balance + (window.gameState.cryptoBalance * window.gameState.cryptoPrice);
     
-    // 2. Рассчитываем лигу игрока на основе его капитала
     let leagueName = "Бронзовая";
     let leagueClass = "league-bronze";
 
@@ -102,10 +137,7 @@ window.updateLeaderboard = function() {
         leagueClass = "league-bronze";
     }
 
-    // 3. Соединяем ботов и игрока в один массив для честной сортировки позиций
     let fullList = [];
-    
-    // Добавляем всех ботов
     window.gameState.mockLeaderboard.forEach(function(bot) {
         fullList.push({
             name: bot.name,
@@ -114,19 +146,16 @@ window.updateLeaderboard = function() {
         });
     });
 
-    // Добавляем живого игрока
     fullList.push({
         name: "Вы (Капитал)",
         balance: currentScore,
         isPlayer: true
     });
 
-    // Сортируем весь список по убыванию баланса
     fullList.sort(function(a, b) {
         return b.balance - a.balance;
     });
 
-    // Находим реальное итоговое место игрока в отсортированном списке
     let playerRank = 1;
     for (let i = 0; i < fullList.length; i++) {
         if (fullList[i].isPlayer) {
@@ -135,7 +164,6 @@ window.updateLeaderboard = function() {
         }
     }
 
-    // 4. Корректируем отображение ранга под ваши правила лиг (если игрок не вошел в топ-10 ботов)
     let finalRankValue = playerRank;
     if (playerRank > 10) {
         if (leagueName === "Золотая") {
@@ -147,7 +175,6 @@ window.updateLeaderboard = function() {
         }
     }
 
-    // Обновляем текстовые элементы лиги на экране
     const leagueNameEl = document.getElementById('player-league-name');
     const rankValueEl = document.getElementById('player-rank-value');
     
@@ -160,14 +187,12 @@ window.updateLeaderboard = function() {
         rankValueEl.innerText = finalRankValue;
     }
 
-    // 5. Отрисовка таблицы лидеров на экране (только если вкладка "Топ" активна)
     const container = document.getElementById('leaderboard-list');
     const tabLeaderboard = document.getElementById('tab-leaderboard');
     if (!container || !tabLeaderboard || !tabLeaderboard.classList.contains('active')) return;
 
     container.innerHTML = "";
     
-    // Если игрок плетется ниже 10-го места, выводим его текущую позицию отдельной плашкой в самый верх
     if (playerRank > 10) {
         const pRow = document.createElement('div');
         pRow.classList.add('leaderboard-item', 'player-row');
@@ -179,21 +204,17 @@ window.updateLeaderboard = function() {
         container.appendChild(pRow);
     }
 
-    // Вырезаем ровно первые 10 мест из общего отсортированного массива для показа в таблице
     const displayTop10 = fullList.slice(0, 10);
 
     displayTop10.forEach(function(item, index) {
         const currentItemRank = index + 1;
         let itemLeagueClass = "league-bronze";
-        
-        // Топ-10 — это всегда Бриллиантовая лига
         if (currentItemRank <= 10) itemLeagueClass = "league-diamond";
         
         const row = document.createElement('div');
         row.classList.add('leaderboard-item');
         if (item.isPlayer) row.classList.add('player-row');
         
-        // Если это строка игрока — пишем его ранг, если бот — его порядковый номер
         const showRank = item.isPlayer ? finalRankValue : currentItemRank;
 
         row.innerHTML = `
@@ -204,7 +225,6 @@ window.updateLeaderboard = function() {
         container.appendChild(row);
     });
 };
-
 
 // ==========================================
 // 4. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)
@@ -279,104 +299,3 @@ window.playCasino = function(betAmount) {
     window.updateUI();
 };
 
-window.buyUpgrade = function(upgradeId) {
-    const upgrade = window.upgrades[upgradeId];
-    if (!upgrade) return;
-
-    const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
-
-    if (window.gameState.balance >= currentPrice) {
-        window.gameState.balance -= currentPrice;
-        upgrade.level += 1;
-        window.updateUI();
-    } else {
-        alert("Недостаточно USD для покупки улучшения!");
-    }
-};
-
-window.tradeCrypto = function(action) {
-    const tradeVolume = 0.01;
-    const costInUSD = window.gameState.cryptoPrice * tradeVolume;
-    const statusEl = document.getElementById('exchange-status');
-
-    if (action === 'buy') {
-        if (window.gameState.balance >= costInUSD) {
-            window.gameState.balance -= costInUSD;
-            window.gameState.cryptoBalance += tradeVolume;
-            if (statusEl) statusEl.innerText = `Куплено ${tradeVolume} BTC`;
-        } else {
-            if (statusEl) statusEl.innerText = "Недостаточно USD!";
-        }
-    } else if (action === 'sell') {
-        if (window.gameState.cryptoBalance >= tradeVolume) {
-            window.gameState.cryptoBalance -= tradeVolume;
-            window.gameState.balance += costInUSD;
-            if (statusEl) statusEl.innerText = `Продано ${tradeVolume} BTC`;
-        } else {
-            if (statusEl) statusEl.innerText = "Недостаточно BTC на балансе!";
-        }
-    }
-    window.updateUI();
-};
-
-window.startLaborShift = function() {
-    const clickPower = window.calculateClickPower();
-    window.gameState.balance += clickPower;
-    
-    const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
-    const displayText = "+" + (clickPower * rate).toFixed(1) + " " + window.gameState.selectedCurrency;
-    window.createFloatingText(displayText);
-    
-    window.updateUI();
-};
-
-window.copyInviteLink = function() {
-    // Встроены ваши реальные данные из BotFather для запуска Mini App
-    const botUsername = "AvtykClicker_bot"; 
-    const appShortName = "game";           
-    
-    // Генерация уникального ID игрока для реферальной системы
-    const userId = Math.floor(Math.random() * 899999 + 100000);
-    
-    // Сборка официальной ссылки, которая откроет ваше приложение прямо в Telegram
-    const dummyUrl = "https://t.me/" + botUsername + "/" + appShortName + "?startapp=" + userId;
-    
-    navigator.clipboard.writeText(dummyUrl).then(function() {
-        alert("Реферальная ссылка скопирована: " + dummyUrl);
-    }).catch(function() {
-        alert("Ошибка копирования. Ссылка: " + dummyUrl);
-    });
-};
-
-
-
-// ==========================================
-// 5. ИНИЦИАЛИЗАЦИЯ И ИГРОВЫЕ ЦИКЛЫ (GAME TIMERS)
-// ==========================================
-window.onload = function() {
-    window.initMockLeaderboard();
-    window.updateUI();
-
-    setInterval(function() {
-        const passiveIncome = window.calculatePassiveIncome();
-        if (passiveIncome > 0) {
-            window.gameState.balance += passiveIncome;
-        }
-        
-        const priceChangePercent = (Math.random() * 5 - 2.5) / 100;
-        window.gameState.cryptoPrice += window.gameState.cryptoPrice * priceChangePercent;
-        if (window.gameState.cryptoPrice < 5000) {
-            window.gameState.cryptoPrice = 5000;
-        }
-
-        window.gameState.mockLeaderboard.forEach(function(bot) {
-            bot.balanceUSD += Math.floor(Math.random() * 150 - 50);
-        });
-
-        window.gameState.mockLeaderboard.sort(function(a, b) {
-            return b.balanceUSD - a.balanceUSD;
-        });
-
-        window.updateUI();
-    }, 1000);
-};}

@@ -351,15 +351,15 @@ window.startLaborShift = function() {
 };
 
 window.copyInviteLink = function() {
-    // Впишите сюда юзернейм вашего бота (без @) и короткое имя приложения из BotFather
-    const botUsername = "CryptoTycoonBot"; // Пример: имя вашего бота
-    const appShortName = "game";           // Пример: короткое имя Mini App
+    // Встроены ваши реальные данные из BotFather для запуска Mini App
+    const botUsername = "AvtykClicker_bot"; 
+    const appShortName = "game";           
     
-    // Генерация уникального ID игрока (в будущем здесь будет реальный ID из Telegram.WebApp)
+    // Генерация уникального ID игрока для реферальной системы
     const userId = Math.floor(Math.random() * 899999 + 100000);
     
-    // Официальный формат прямой ссылки на Telegram Mini App с реферальным параметром
-    const dummyUrl = `https://t.me/{botUsername}/${appShortName}?startapp=${userId}`;
+    // Сборка официальной ссылки, которая откроет ваше приложение прямо в Telegram
+    const dummyUrl = "https://t.me/" + botUsername + "/" + appShortName + "?startapp=" + userId;
     
     navigator.clipboard.writeText(dummyUrl).then(function() {
         alert("Реферальная ссылка скопирована: " + dummyUrl);
@@ -367,6 +367,7 @@ window.copyInviteLink = function() {
         alert("Ошибка копирования. Ссылка: " + dummyUrl);
     });
 };
+
 
 
 // ==========================================

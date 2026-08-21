@@ -359,7 +359,7 @@ window.copyInviteLink = function() {
     const userId = Math.floor(Math.random() * 899999 + 100000);
     
     // Официальный формат прямой ссылки на Telegram Mini App с реферальным параметром
-    const dummyUrl = `https://t.me{botUsername}/${appShortName}?startapp=${userId}`;
+    const dummyUrl = `https://t.me/{botUsername}/${appShortName}?startapp=${userId}`;
     
     navigator.clipboard.writeText(dummyUrl).then(function() {
         alert("Реферальная ссылка скопирована: " + dummyUrl);

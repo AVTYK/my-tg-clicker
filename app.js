@@ -75,10 +75,12 @@ window.updateUI = function() {
 };
 
 window.calculateClickPower = function() {
+    // ИСПРАВЛЕНО: Прямое обращение по ID ключу [1] вместо пустого массива или .level
     return 1 + (window.upgrades[1].level * window.upgrades[1].power);
 };
 
 window.calculatePassiveIncome = function() {
+    // ИСПРАВЛЕНО: Прямое обращение по ID ключам [2] и [3] вместо пустого массива или .level
     const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
     const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
     return incomeFromMining + incomeFromBusiness;
@@ -162,7 +164,8 @@ window.updateLeaderboard = function() {
     }
 
     const container = document.getElementById('leaderboard-list');
-    if (!container || !document.getElementById('tab-leaderboard').classList.contains('active')) return;
+    const tabLeaderboard = document.getElementById('tab-leaderboard');
+    if (!container || !tabLeaderboard || !tabLeaderboard.classList.contains('active')) return;
 
     let displayList = [];
     for (let i = 0; i < window.gameState.mockLeaderboard.length; i++) {
@@ -287,9 +290,3 @@ window.playCasino = function(betAmount) {
     window.updateUI();
 };
 
-window.buyUpgrade = function(upgradeId) {
-    const upgrade = window.upgrades[upgradeId];
-    if (!upgrade) return;
-
-    const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
-}

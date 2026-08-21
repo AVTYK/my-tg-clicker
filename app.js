@@ -75,12 +75,10 @@ window.updateUI = function() {
 };
 
 window.calculateClickPower = function() {
-    // ИСПРАВЛЕНО: Прямое обращение по ID ключу [1] вместо пустого массива или .level
     return 1 + (window.upgrades[1].level * window.upgrades[1].power);
 };
 
 window.calculatePassiveIncome = function() {
-    // ИСПРАВЛЕНО: Прямое обращение по ID ключам [2] и [3] вместо пустого массива или .level
     const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
     const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
     return incomeFromMining + incomeFromBusiness;
@@ -290,3 +288,7 @@ window.playCasino = function(betAmount) {
     window.updateUI();
 };
 
+window.buyUpgrade = function(upgradeId) {
+    const upgrade = window.upgrades[upgradeId];
+    if (!upgrade) return;
+}

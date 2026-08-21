@@ -75,19 +75,16 @@ window.updateUI = function() {
 };
 
 window.calculateClickPower = function() {
-    // Улучшение №1 — это сила клика (Business Click)
+    // ЖЕСТКО ЗАКРЕПЛЕННЫЙ ИНДЕКС 1 ДЛЯ СИЛЫ КЛИКА
     return 1 + (window.upgrades[1].level * window.upgrades[1].power);
 };
 
 window.calculatePassiveIncome = function() {
-    // Улучшение №2 — это крипто-ферма (Crypto Farm)
+    // ЖЕСТКО ЗАКРЕПЛЕННЫЕ ИНДЕКСЫ 2 И 3 ДЛЯ ПАССИВНОГО ДОХОДА
     const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
-    // Улучшение №3 — это банк (Bank Network)
-    const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
-    
+    const incomeFromBusiness = window.upgrades.level * window.upgrades.power;
     return incomeFromMining + incomeFromBusiness;
 };
-
 
 window.createFloatingText = function(text) {
     const area = document.querySelector('.click-area');
@@ -288,7 +285,7 @@ window.playCasino = function(betAmount) {
     window.gameState.balance -= betAmount;
     const isWin = Math.random() > 0.5;
     
-    if (isWin) {
+       if (isWin) {
         const winAmount = betAmount * 2;
         window.gameState.balance += winAmount;
         if (statusEl) {
@@ -303,4 +300,3 @@ window.playCasino = function(betAmount) {
     }
     window.updateUI();
 };
-

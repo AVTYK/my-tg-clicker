@@ -258,3 +258,36 @@ window.onload = function() {
         window.updateUI();
     }, 1000);
 };
+window.saveGame = function() {
+    const gameState = {
+        balanceUSD: window.gameState.balanceUSD,
+        balanceBTC: window.gameState.balanceBTC,
+        upgrades: {
+            1: window.upgrades[1].level,
+            2: window.upgrades[2].level,
+            3: window.upgrades[3].level
+        }
+    };
+    localStorage.setItem('cryptoTycoonGame', JSON.stringify(gameState));
+};
+
+window.loadGame = function() {
+    const savedGame = localStorage.getItem('cryptoTycoonGame');
+    if (savedGame) {
+        const gameState = JSON.parse(savedGame);
+        window.gameState.balanceUSD = gameState.balanceUSD;
+        window.gameState.balanceBTC = gameState.balanceBTC;
+        window.upgrades[1].level = gameState.upgrades[1];
+        window.upgrades[2].level = gameState.upgrades[2];
+        window.upgrades[3].level = gameState.upgrades[3];
+        window.updateUI();
+    }
+};
+
+// Вызываем loadGame при загрузке игры
+window.onload = function() {
+    window.loadGame();
+};
+
+// Вызываем saveGame при каждом изменении состояния игры
+setInterval(window.saveGame, 10000); // Автосохранение каждые 10 секунд

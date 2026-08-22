@@ -228,28 +228,21 @@ window.startLaborShift = function() {
 };
 
 window.copyInviteLink = function() {
-    // 1. Проверяем наличие Telegram WebApp SDK
-    const tg = window.Telegram?.WebApp;
+    // Вот ваши данные на отдельных строчках:
+    const myBot = "AvtykClicker_bot";
+    const myApp = "game";
+    const myId  = "647232";
     
-    // 2. Получаем реальный ID пользователя. 
-    // Если открыто в браузере, генерируем случайное число.
-    const userId = tg?.initDataUnsafe?.user?.id || Math.floor(Math.random() * 899999 + 100000);
+    // Программа сама соединит их через правильные слэши:
+    const inviteUrl = "https://t.me/" + myBot + "/" + myApp + "?startapp=" + myId;
     
-    // 3. Собираем ссылку через обычные кавычки и плюсы
-    const inviteUrl = "https://t.me" + userId;
-    
-    // 4. Копируем в буфер обмена
     navigator.clipboard.writeText(inviteUrl).then(function() {
-        // Если запущено в Telegram, показываем красивое всплывающее окно
-        if (tg && tg.showPopup) {
-            tg.showPopup({ message: "Реферальная ссылка скопирована!" });
-        } else {
-            alert("Ссылка скопирована: " + inviteUrl);
-        }
+        alert("Ссылка скопирована: " + inviteUrl);
     }).catch(function() {
         alert("Ошибка копирования. Ссылка: " + inviteUrl);
     });
 };
+
 
 
 // ==========================================

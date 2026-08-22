@@ -242,7 +242,7 @@ window.copyInviteLink = function() {
     const myApp = "game";
     const myId  = "647232";
     
-    const inviteUrl = "https://t.me" + myBot + "/" + myApp + "?startapp=" + myId;
+    const inviteUrl = "https://t.me/" + myBot + "/" + myApp + "?startapp=" + myId;
     
     navigator.clipboard.writeText(inviteUrl).then(function() {
         alert("Ссылка скопирована: " + inviteUrl);

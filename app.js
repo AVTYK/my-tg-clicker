@@ -71,6 +71,24 @@ window.updateUI = function() {
     }
 };
 
+window.buyUpgrade = function(upgradeId) {
+    const upgrade = window.upgrades[upgradeId];
+    if (!upgrade) return;
+
+    // Расчет текущей стоимости апгрейда
+    const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
+
+    // Проверка баланса игрока
+    if (window.gameState.balance >= currentPrice) {
+        window.gameState.balance -= currentPrice;
+        upgrade.level += 1;
+        window.updateUI();
+        window.saveGame();
+    } else {
+        alert("Недостаточно USD для покупки улучшения!");
+    }
+};
+
 window.calculateClickPower = function() {
     // Базовая сила клика теперь всегда равна 1
     return 1;
@@ -87,8 +105,6 @@ window.calculatePassiveIncome = function() {
     
     return totalPassive;
 };
-
-
 
 window.createFloatingText = function(text) {
     const area = document.querySelector('.click-area');
@@ -110,6 +126,26 @@ window.createFloatingText = function(text) {
         span.remove();
     }, 800);
 };
+
+    const area = document.querySelector('.click-area');
+    if (!area) return;
+
+    const span = document.createElement('span');
+    span.classList.add('floating-number');
+    span.innerText = text;
+    
+    const x = 40 + Math.random() * 20;
+    const y = 40 + Math.random() * 20;
+    
+    span.style.left = x + "%";
+    span.style.top = y + "%";
+    
+    area.appendChild(span);
+    
+    setTimeout(function() {
+        span.remove();
+    }, 800);
+;
 
 // ==========================================
 // 4. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)

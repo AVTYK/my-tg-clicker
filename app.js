@@ -72,14 +72,23 @@ window.updateUI = function() {
 };
 
 window.calculateClickPower = function() {
-    return 1 + (window.upgrades[1].level * window.upgrades[1].power);
+    // Базовая сила клика теперь всегда равна 1
+    return 1;
 };
 
 window.calculatePassiveIncome = function() {
-    const incomeFromMining = window.upgrades[2].level * window.upgrades[2].power;
-    const incomeFromBusiness = window.upgrades[3].level * window.upgrades[3].power;
-    return incomeFromMining + incomeFromBusiness;
+    let totalPassive = 0;
+    
+    // Цикл автоматически считает доход от всех 10 новых бизнесов
+    for (let id in window.upgrades) {
+        const upgrade = window.upgrades[id];
+        totalPassive += upgrade.level * upgrade.passiveIncome;
+    }
+    
+    return totalPassive;
 };
+
+
 
 window.createFloatingText = function(text) {
     const area = document.querySelector('.click-area');
@@ -174,19 +183,76 @@ window.playCasino = function(betAmount) {
     window.saveGame();
 };
 
-window.buyUpgrade = function(upgradeId) {
-    const upgrade = window.upgrades[upgradeId];
-    if (!upgrade) return;
-
-    const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
-
-    if (window.gameState.balance >= currentPrice) {
-        window.gameState.balance -= currentPrice;
-        upgrade.level += 1;
-        window.updateUI();
-        window.saveGame();
-    } else {
-        alert("Недостаточно USD для покупки улучшения!");
+window.upgrades = {
+    1: {
+        name: "Накрутка ботов",
+        basePrice: 60,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 0.2
+    },
+    2: {
+        name: "Скам-канал",
+        basePrice: 300,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 1.2
+    },
+    3: {
+        name: "Слив инсайдов",
+        basePrice: 1000,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 5
+    },
+    4: {
+        name: "Подпольное казино",
+        basePrice: 4000,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 24
+    },
+    5: {
+        name: "Дубайская вилла",
+        basePrice: 15000,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 100
+    },
+    6: {
+        name: "Золотая шахта",
+        basePrice: 55000,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 420
+    },
+    7: {
+        name: "Оружейный завод",
+        basePrice: 200000,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 1800
+    },
+    8: {
+        name: "Нефтяная вышка",
+        basePrice: 750000,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 7500
+    },
+    9: {
+        name: "Собственная ЧВК",
+        basePrice: 3500000,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 38000
+    },
+    10: {
+        name: "Ложа иллюминатов",
+        basePrice: 15000000,
+        priceMultiplier: 1.5,
+        level: 0,
+        passiveIncome: 200000
     }
 };
 

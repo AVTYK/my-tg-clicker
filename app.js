@@ -107,6 +107,7 @@ window.calculatePassiveIncome = function() {
 };
 
 window.createFloatingText = function(text) {
+
     const area = document.querySelector('.click-area');
     if (!area) return;
 

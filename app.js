@@ -220,79 +220,6 @@ window.playCasino = function(betAmount) {
     window.saveGame();
 };
 
-window.upgrades = {
-    1: {
-        name: "Накрутка ботов",
-        basePrice: 60,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 0.2
-    },
-    2: {
-        name: "Скам-канал",
-        basePrice: 300,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 1.2
-    },
-    3: {
-        name: "Слив инсайдов",
-        basePrice: 1000,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 5
-    },
-    4: {
-        name: "Подпольное казино",
-        basePrice: 4000,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 24
-    },
-    5: {
-        name: "Дубайская вилла",
-        basePrice: 15000,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 100
-    },
-    6: {
-        name: "Золотая шахта",
-        basePrice: 55000,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 420
-    },
-    7: {
-        name: "Оружейный завод",
-        basePrice: 200000,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 1800
-    },
-    8: {
-        name: "Нефтяная вышка",
-        basePrice: 750000,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 7500
-    },
-    9: {
-        name: "Собственная ЧВК",
-        basePrice: 3500000,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 38000
-    },
-    10: {
-        name: "Ложа иллюминатов",
-        basePrice: 15000000,
-        priceMultiplier: 1.5,
-        level: 0,
-        passiveIncome: 200000
-    }
-};
-
 window.tradeCrypto = function(action) {
     const tradeVolume = 0.01;
     const costInUSD = window.gameState.cryptoPrice * tradeVolume;
@@ -331,12 +258,10 @@ window.startLaborShift = function() {
 };
 
 window.copyInviteLink = function() {
-    // Вот ваши данные на отдельных строчках:
     const myBot = "AvtykClicker_bot";
     const myApp = "game";
     const myId  = "647232";
     
-    // Программа сама соединит их через правильные слэши:
     const inviteUrl = "https://t.me/" + myBot + "/" + myApp + "?startapp=" + myId;
     
     navigator.clipboard.writeText(inviteUrl).then(function() {
@@ -346,20 +271,20 @@ window.copyInviteLink = function() {
     });
 };
 
-
-
 // ==========================================
 // 5. СОХРАНЕНИЕ И ЗАГРУЗКА (SAVE SYSTEM)
 // ==========================================
 window.saveGame = function() {
+    const savedUpgrades = {};
+    // Автоматически собираем уровни всех имеющихся апгрейдов от 1 до 10
+    for (let id in window.upgrades) {
+        savedUpgrades[id] = window.upgrades[id].level;
+    }
+
     const saveObject = {
         balance: window.gameState.balance,
         cryptoBalance: window.gameState.cryptoBalance,
-        upgrades: {
-            1: window.upgrades[1].level,
-            2: window.upgrades[2].level,
-            3: window.upgrades[3].level
-        }
+        upgrades: savedUpgrades
     };
     localStorage.setItem('cryptoTycoonGame', JSON.stringify(saveObject));
 };
@@ -373,9 +298,12 @@ window.loadGame = function() {
         if (parsedData.cryptoBalance !== undefined) window.gameState.cryptoBalance = parsedData.cryptoBalance;
         
         if (parsedData.upgrades) {
-            if (parsedData.upgrades[1] !== undefined) window.upgrades[1].level = parsedData.upgrades[1];
-            if (parsedData.upgrades[2] !== undefined) window.upgrades[2].level = parsedData.upgrades[2];
-            if (parsedData.upgrades[3] !== undefined) window.upgrades[3].level = parsedData.upgrades[3];
+            // Восстанавливаем уровни для всех 10 апгрейдов автоматически
+            for (let id in window.upgrades) {
+                if (parsedData.upgrades[id] !== undefined) {
+                    window.upgrades[id].level = parsedData.upgrades[id];
+                }
+            }
         }
     }
 };
@@ -384,6 +312,9 @@ window.loadGame = function() {
 // 6. ЕДИНАЯ ТОЧКА ИНИЦИАЛИЗАЦИИ И ЦИКЛЫ
 // ==========================================
 window.onload = function() {
+    // ВРЕМЕННО ОЧИЩАЕМ СТАРЫЙ СЛОМАННЫЙ ПРОГРЕСС ПРИ ПЕРВОМ ЗАПУСКЕ
+    localStorage.clear();
+
     window.loadGame();
     window.updateUI();
 

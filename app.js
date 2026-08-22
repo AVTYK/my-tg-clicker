@@ -17,9 +17,16 @@ window.gameState = {
 // 2. БАЗА ДАННЫХ УЛУЧШЕНИЙ (UPGRADES)
 // ==========================================
 window.upgrades = {
-    1: { name: "Business Click", basePrice: 10, priceMultiplier: 1.5, level: 0, power: 1 },
-    2: { name: "Crypto Farm", basePrice: 100, priceMultiplier: 1.8, level: 0, power: 5 },
-    3: { name: "Bank Network", basePrice: 1000, priceMultiplier: 2.0, level: 0, power: 25 }
+    1: { name: "Накрутка ботов", basePrice: 60, priceMultiplier: 1.5, level: 0, passiveIncome: 0.2 },
+    2: { name: "Скам-канал", basePrice: 300, priceMultiplier: 1.5, level: 0, passiveIncome: 1.2 },
+    3: { name: "Слив инсайдов", basePrice: 1000, priceMultiplier: 1.5, level: 0, passiveIncome: 5 },
+    4: { name: "Подпольное казино", basePrice: 4000, priceMultiplier: 1.5, level: 0, passiveIncome: 24 },
+    5: { name: "Дубайская вилла", basePrice: 15000, priceMultiplier: 1.5, level: 0, passiveIncome: 100 },
+    6: { name: "Золотая шахта", basePrice: 55000, priceMultiplier: 1.5, level: 0, passiveIncome: 420 },
+    7: { name: "Оружейный завод", basePrice: 200000, priceMultiplier: 1.5, level: 0, passiveIncome: 1800 },
+    8: { name: "Нефтяная вышка", basePrice: 750000, priceMultiplier: 1.5, level: 0, passiveIncome: 7500 },
+    9: { name: "Собственная ЧВК", basePrice: 3500000, priceMultiplier: 1.5, level: 0, passiveIncome: 38000 },
+    10: { name: "Ложа иллюминатов", basePrice: 15000000, priceMultiplier: 1.5, level: 0, passiveIncome: 200000 }
 };
 
 // ==========================================
@@ -75,10 +82,8 @@ window.buyUpgrade = function(upgradeId) {
     const upgrade = window.upgrades[upgradeId];
     if (!upgrade) return;
 
-    // Расчет текущей стоимости апгрейда
     const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
 
-    // Проверка баланса игрока
     if (window.gameState.balance >= currentPrice) {
         window.gameState.balance -= currentPrice;
         upgrade.level += 1;
@@ -90,24 +95,19 @@ window.buyUpgrade = function(upgradeId) {
 };
 
 window.calculateClickPower = function() {
-    // Базовая сила клика теперь всегда равна 1
     return 1;
 };
 
 window.calculatePassiveIncome = function() {
     let totalPassive = 0;
-    
-    // Цикл автоматически считает доход от всех 10 новых бизнесов
     for (let id in window.upgrades) {
         const upgrade = window.upgrades[id];
         totalPassive += upgrade.level * upgrade.passiveIncome;
     }
-    
     return totalPassive;
 };
 
 window.createFloatingText = function(text) {
-
     const area = document.querySelector('.click-area');
     if (!area) return;
 
@@ -127,26 +127,6 @@ window.createFloatingText = function(text) {
         span.remove();
     }, 800);
 };
-
-    const area = document.querySelector('.click-area');
-    if (!area) return;
-
-    const span = document.createElement('span');
-    span.classList.add('floating-number');
-    span.innerText = text;
-    
-    const x = 40 + Math.random() * 20;
-    const y = 40 + Math.random() * 20;
-    
-    span.style.left = x + "%";
-    span.style.top = y + "%";
-    
-    area.appendChild(span);
-    
-    setTimeout(function() {
-        span.remove();
-    }, 800);
-;
 
 // ==========================================
 // 4. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)
@@ -199,7 +179,7 @@ window.playCasino = function(betAmount) {
         if (statusEl) statusEl.innerText = "Недостаточно средств!";
         return;
     }
-    
+
     window.gameState.balance -= betAmount;
     const isWin = Math.random() > 0.5;
     
@@ -262,7 +242,7 @@ window.copyInviteLink = function() {
     const myApp = "game";
     const myId  = "647232";
     
-    const inviteUrl = "https://t.me/" + myBot + "/" + myApp + "?startapp=" + myId;
+    const inviteUrl = "https://t.me" + myBot + "/" + myApp + "?startapp=" + myId;
     
     navigator.clipboard.writeText(inviteUrl).then(function() {
         alert("Ссылка скопирована: " + inviteUrl);
@@ -276,7 +256,6 @@ window.copyInviteLink = function() {
 // ==========================================
 window.saveGame = function() {
     const savedUpgrades = {};
-    // Автоматически собираем уровни всех имеющихся апгрейдов от 1 до 10
     for (let id in window.upgrades) {
         savedUpgrades[id] = window.upgrades[id].level;
     }
@@ -298,7 +277,6 @@ window.loadGame = function() {
         if (parsedData.cryptoBalance !== undefined) window.gameState.cryptoBalance = parsedData.cryptoBalance;
         
         if (parsedData.upgrades) {
-            // Восстанавливаем уровни для всех 10 апгрейдов автоматически
             for (let id in window.upgrades) {
                 if (parsedData.upgrades[id] !== undefined) {
                     window.upgrades[id].level = parsedData.upgrades[id];
@@ -308,30 +286,3 @@ window.loadGame = function() {
     }
 };
 
-// ==========================================
-// 6. ЕДИНАЯ ТОЧКА ИНИЦИАЛИЗАЦИИ И ЦИКЛЫ
-// ==========================================
-window.onload = function() {
-    // ВРЕМЕННО ОЧИЩАЕМ СТАРЫЙ СЛОМАННЫЙ ПРОГРЕСС ПРИ ПЕРВОМ ЗАПУСКЕ
-    localStorage.clear();
-
-    window.loadGame();
-    window.updateUI();
-
-    setInterval(function() {
-        const passiveIncome = window.calculatePassiveIncome();
-        if (passiveIncome > 0) {
-            window.gameState.balance += passiveIncome;
-        }
-        
-        const priceChangePercent = (Math.random() * 5 - 2.5) / 100;
-        window.gameState.cryptoPrice += window.gameState.cryptoPrice * priceChangePercent;
-        if (window.gameState.cryptoPrice < 5000) {
-            window.gameState.cryptoPrice = 5000;
-        }
-
-        window.updateUI();
-    }, 1000);
-
-    setInterval(window.saveGame, 10000);
-};

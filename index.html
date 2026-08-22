@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tycoon & Labor Market</title>
-    <!-- Прямое подключение стилей без папки css -->
+    <!-- ИСПРАВЛЕНО: Прямое подключение стилей без папки css -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -132,20 +132,6 @@
             </section>
         </main>
 
-        <!-- ВКЛАДКА 6: ТОП ИГРОКОВ -->
-        <main id="tab-leaderboard" class="tab-content">
-            <section class="leaderboard-section">
-                <h2>Топ Игроков</h2>
-                <div class="player-league-card">
-                    <div class="player-league-title">Ваша лига: <span id="player-league-name">—</span></div>
-                    <div class="player-rank-sub">Вы на <span id="player-rank-value">—</span> месте в мире</div>
-                </div>
-                <div class="leaderboard-container" id="leaderboard-list">
-                    <!-- Заполняется динамически из JS -->
-                </div>
-            </section>
-        </main>
-
         <!-- ТАБ-БАР НАВИГАЦИИ -->
         <nav class="nav-bar">
             <button id="nav-btn-market" class="nav-btn active" onclick="window.switchTab('tab-market')">Биржа</button>
@@ -153,11 +139,10 @@
             <button id="nav-btn-crypto" class="nav-btn" onclick="window.switchTab('tab-crypto')">Трейдинг</button>
             <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
             <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
-            <button id="nav-btn-leaderboard" class="nav-btn" onclick="window.switchTab('tab-leaderboard')">Топ</button>
         </nav>
     </div>
 
-    <!-- Прямое подключение скрипта без папки js -->
+    <!-- ИСПРАВЛЕНО: Прямое подключение скрипта без папки js -->
     <script src="app.js"></script>
 </body>
 </html>

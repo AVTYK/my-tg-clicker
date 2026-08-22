@@ -228,13 +228,29 @@ window.startLaborShift = function() {
 };
 
 window.copyInviteLink = function() {
-    const dummyUrl = "https://t.me" + Math.floor(Math.random() * 899999 + 100000);
-    navigator.clipboard.writeText(dummyUrl).then(function() {
-        alert("Ссылка скопирована: " + dummyUrl);
+    // 1. Проверяем наличие Telegram WebApp SDK
+    const tg = window.Telegram?.WebApp;
+    
+    // 2. Получаем реальный ID пользователя. 
+    // Если открыто в браузере, генерируем случайное число.
+    const userId = tg?.initDataUnsafe?.user?.id || Math.floor(Math.random() * 899999 + 100000);
+    
+    // 3. Собираем ссылку через обычные кавычки и плюсы
+    const inviteUrl = "https://t.me" + userId;
+    
+    // 4. Копируем в буфер обмена
+    navigator.clipboard.writeText(inviteUrl).then(function() {
+        // Если запущено в Telegram, показываем красивое всплывающее окно
+        if (tg && tg.showPopup) {
+            tg.showPopup({ message: "Реферальная ссылка скопирована!" });
+        } else {
+            alert("Ссылка скопирована: " + inviteUrl);
+        }
     }).catch(function() {
-        alert("Ошибка копирования. Ссылка: " + dummyUrl);
+        alert("Ошибка копирования. Ссылка: " + inviteUrl);
     });
 };
+
 
 // ==========================================
 // 5. СОХРАНЕНИЕ И ЗАГРУЗКА (SAVE SYSTEM)

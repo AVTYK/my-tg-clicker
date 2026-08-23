@@ -8,7 +8,7 @@ window.gameState = {
     totalEarned: 0,
     clickPower: 1,
     
-    // Уровни бизнесов/улучшений (1-10)
+    // Уровни апгрейдов строго по ID (1-10) из вашей верстки
     upgrades: {
         1: 0, 2: 0, 3: 0, 4: 0, 5: 0,
         6: 0, 7: 0, 8: 0, 9: 0, 10: 0
@@ -17,9 +17,9 @@ window.gameState = {
 
 // Константы экономики
 const CURRENCY_RATES = { USD: 1, EUR: 0.92, RUB: 90 };
-const BTC_PRICE_USD = 50000; // Базовый курс из верстки
+const BTC_PRICE_USD = 50000;
 
-// Массив лиг для расчета
+// Массив лиг для динамического расчета
 const LEAGUES = [
     { name: 'Бронзовая лига 🥉', minEarned: 0 },
     { name: 'Серебряная лига 🥈', minEarned: 5000 },
@@ -28,7 +28,7 @@ const LEAGUES = [
     { name: 'Иллюминаты 👁️', minEarned: 1000000 }
 ];
 
-// Конфигурация апгрейдов по ID (соответствует кнопкам buyUpgrade(id))
+// Конфигурация стоимости и пассивного дохода апгрейдов (1-10)
 const UPGRADE_CONFIG = {
     1: { baseCost: 60, costMultiplier: 1.15, baseIncome: 1 },
     2: { baseCost: 300, costMultiplier: 1.15, baseIncome: 5 },
@@ -43,7 +43,7 @@ const UPGRADE_CONFIG = {
 };
 
 // ==========================================
-// 2. СИСТЕМА ЛИГ И РЕЙТИНГА
+// 2. СИСТЕМА ЛИГ И РЕЙТИНГА (Защита от undefined)
 // ==========================================
 window.getCurrentLeague = function() {
     let currentLeague = LEAGUES[0].name;
@@ -69,7 +69,7 @@ window.updateUI = function() {
     const rate = CURRENCY_RATES[window.gameState.currentCurrency];
     const symbol = window.gameState.currentCurrency === 'USD' ? 'USD' : window.gameState.currentCurrency === 'EUR' ? 'EUR' : 'RUB';
     
-    // 1. Балансы и лиги в шапке
+    // 1. Обновление балансов в шапке
     const convertedBalance = Math.floor(window.gameState.balanceUSD * rate);
     const elBalanceUSD = document.getElementById('balance-usd');
     if (elBalanceUSD) elBalanceUSD.innerText = `${convertedBalance.toLocaleString()} ${symbol}`;
@@ -77,17 +77,18 @@ window.updateUI = function() {
     const elBalanceBTC = document.getElementById('balance-btc');
     if (elBalanceBTC) elBalanceBTC.innerText = window.gameState.balanceBTC.toFixed(4) + ' BTC';
 
+    // 2. Лига в шапке
     const elUserLeague = document.getElementById('user-league');
     if (elUserLeague) elUserLeague.innerText = window.getCurrentLeague();
 
-    // Статистика дохода и клика
+    // 3. Статистика дохода и клика в шапке
     const elPassiveIncome = document.getElementById('ui-pincome');
     if (elPassiveIncome) elPassiveIncome.innerText = Math.floor(window.calculatePassiveIncome() * rate).toLocaleString();
     
     const elClickPower = document.getElementById('ui-cpower');
     if (elClickPower) elClickPower.innerText = Math.floor(window.gameState.clickPower * rate).toLocaleString();
 
-    // 2. Селектор валют (активный класс)
+    // 4. Селекторы валют (переключение активного класса)
     ['USD', 'EUR', 'RUB'].forEach(cur => {
         const btn = document.getElementById(`curr-btn-${cur}`);
         if (btn) {
@@ -99,14 +100,14 @@ window.updateUI = function() {
         }
     });
 
-    // 3. Обновление вкладки ТОП (Leaderboard)
+    // 5. Лиги на вкладке ТОП (id из первого описания ТЗ)
     const elLeaderLeague = document.getElementById('leaderboard-user-league');
     if (elLeaderLeague) elLeaderLeague.innerText = window.getCurrentLeague();
     
     const elLeaderRank = document.getElementById('leaderboard-user-rank');
     if (elLeaderRank) elLeaderRank.innerText = '#' + window.getWorldRank().toLocaleString();
 
-    // 4. Карточки улучшений
+    // 6. Карточки улучшений (1-10) строго по ID из HTML
     for (let id in UPGRADE_CONFIG) {
         const currentLevel = window.gameState.upgrades[id] || 0;
         const config = UPGRADE_CONFIG[id];
@@ -138,7 +139,7 @@ window.calculatePassiveIncome = function() {
     return income;
 };
 
-// Интервал пассивного заработка (1 секунда)
+// Таймер пассивного заработка
 setInterval(() => {
     const income = window.calculatePassiveIncome();
     if (income > 0) {
@@ -149,7 +150,7 @@ setInterval(() => {
 }, 1000);
 
 // ==========================================
-// 5. ИГРОВЫЕ ДЕЙСТВИЯ (УЛУЧШЕНИЯ, ТРЕЙДИНГ, КАЗИНО)
+// 5. ИГРОВЫЕ ДЕЙСТВИЯ (УЛУЧШЕНИЯ, КРИПТА, КАЗИНО)
 // ==========================================
 window.changeCurrency = function(newCurrency) {
     if (CURRENCY_RATES[newCurrency]) {
@@ -204,7 +205,7 @@ window.playCasino = function(betUSD) {
     }
     
     window.gameState.balanceUSD -= betUSD;
-    const isWin = Math.random() < 0.48; // 48% шанс выигрыша
+    const isWin = Math.random() < 0.48;
 
     if (isWin) {
         const prize = betUSD * 2;
@@ -218,14 +219,18 @@ window.playCasino = function(betUSD) {
 };
 
 // ==========================================
-// 6. НАВИГАЦИЯ, РЕФЕРАЛЫ И СОХРАНЕНИЯ
+// 6. НАВИГАЦИЯ (ИСПРАВЛЕНО: Прямое управление отображением style.display)
 // ==========================================
 window.switchTab = function(tabId) {
     const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => tab.classList.remove('active'));
+    tabs.forEach(tab => {
+        tab.style.display = 'none';
+        tab.classList.remove('active');
+    });
     
     const activeTab = document.getElementById(tabId);
     if (activeTab) {
+        activeTab.style.display = 'block';
         activeTab.classList.add('active');
     }
 };
@@ -239,7 +244,7 @@ window.copyInviteLink = function() {
     });
 };
 
-// Автосохранение каждые 5 секунд
+// Автосохранение
 setInterval(() => {
     localStorage.setItem('mafia_clicker_save', JSON.stringify(window.gameState));
 }, 5000);
@@ -257,10 +262,8 @@ window.loadGame = function() {
             console.error("Ошибка чтения сохранения", e);
         }
     }
-    window.updateUI();
+    // Восстанавливаем дефолтную вкладку принудительно через style.display
+    window.switchTab('tab-market');
 };
 
-// Инициализация при загрузке документа
-document.addEventListener("DOMContentLoaded", () => {
-    window.loadGame();
-});
+// Инициализация игры

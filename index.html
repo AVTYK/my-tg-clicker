@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tycoon & Labor Market</title>
-    <!-- ИСПРАВЛЕНО: Прямое подключение стилей без папки css -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,11 +32,11 @@
         </header>
 
         <!-- ВКЛАДКА 1: БИРЖА ТРУДА -->
-        <main id="tab-market" class="tab-content active">
+        <main id="tab-market" class="tab-content">
             <section class="labor-section">
                 <h2>Рынок Труда</h2>
                 <div class="currency-selector">
-                    <button id="curr-btn-USD" class="selector-btn active" onclick="window.changeCurrency('USD')">USD</button>
+                    <button id="curr-btn-USD" class="selector-btn" onclick="window.changeCurrency('USD')">USD</button>
                     <button id="curr-btn-EUR" class="selector-btn" onclick="window.changeCurrency('EUR')">EUR</button>
                     <button id="curr-btn-RUB" class="selector-btn" onclick="window.changeCurrency('RUB')">RUB</button>
                 </div>
@@ -224,3 +223,4 @@
         <!-- ВКЛАДКА 6: ТОП ИГРОКОВ -->
         <main id="tab-leaderboard" class="tab-content">
             <section class="leaderboard-section" style="text-align: center; padding: 20px 10px;">
+                <h2>Мировой Топ Мафии</h2>

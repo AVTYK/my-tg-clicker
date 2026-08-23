@@ -189,6 +189,16 @@
             </section>
         </main>
 
+        <!-- НОВАЯ ВКЛАДКА: ТОП ЛИДЕРОВ -->
+        <main id="tab-top" class="tab-content">
+            <section class="top-section">
+                <h2>Топ лидеров</h2>
+                <ul id="top-players-list">
+                    <!-- Список игроков будет генерироваться динамически -->
+                </ul>
+            </section>
+        </main>
+
         <!-- ВКЛАДКА 4: КАЗИНО -->
         <main id="tab-casino" class="tab-content">
             <section class="casino-section">
@@ -203,6 +213,7 @@
                 </div>
             </section>
         </main>
+
 
         <!-- ВКЛАДКА 5: РЕФЕРАЛЫ -->
         <main id="tab-referrals" class="tab-content">
@@ -223,8 +234,10 @@
             <button id="nav-btn-crypto" class="nav-btn" onclick="window.switchTab('tab-crypto')">Трейдинг</button>
             <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
             <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
+            <button id="nav-btn-top" class="nav-btn" onclick="window.switchTab('tab-top')">Топ</button>
         </nav>
     </div>
+
 
     <!-- ИСПРАВЛЕНО: Прямое подключение скрипта без папки js -->
     <script src="app.js"></script>

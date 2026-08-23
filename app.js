@@ -331,3 +331,92 @@ window.onload = function() {
 
     setInterval(window.saveGame, 10000);
 };
+
+window.topPlayersMock = [
+    { name: "🏆 Алмазная лига (Лидеры)", balance: 500000000 },
+    { name: "🥇 Золотая лига", balance: 250000000 },
+    { name: "🥈 Серебряная лига", balance: 120000000 },
+    { name: "🥉 Бронзовая лига", balance: 50000000 },
+    { name: "🌱 Новички", balance: 10000000 }
+];
+
+window.renderTopPlayers = function() {
+    const listEl = document.getElementById('top-players-list');
+    if (!listEl) return;
+    
+    // Очищаем старый список перед новой отрисовкой
+    listEl.innerHTML = '';
+    
+    // Пытаемся автоматически найти, где в коде лежит ваш текущий баланс
+    let currentBalance = 0;
+    if (window.playerState && typeof window.playerState.balanceUSD !== 'undefined') {
+        currentBalance = window.playerState.balanceUSD;
+    } else if (typeof window.balanceUSD !== 'undefined') {
+        currentBalance = window.balanceUSD;
+    } else if (typeof window.balance !== 'undefined') {
+        currentBalance = window.balance;
+    }
+    
+    // Создаем копию списка лиг
+    const allPlayers = [...window.topPlayersMock];
+    const currentPlayerName = "⭐ Ваш текущий счет";
+    
+    // Добавляем игрока в этот список для сравнения
+    allPlayers.push({ name: currentPlayerName, balance: currentBalance });
+    
+    // Сортируем лиги и игрока: у кого больше баланс, тот выше
+    allPlayers.sort((a, b) => b.balance - a.balance);
+    
+    // Функция для красивого отображения чисел (если вашей функции window.formatCurrency нет)
+    const formatMoney = (typeof window.formatCurrency === 'function') 
+        ? window.formatCurrency 
+        : (num) => '$' + num.toLocaleString();
+
+    // Выводим строки на экран
+    allPlayers.forEach((player, index) => {
+        const li = document.createElement('li');
+        
+        // Настройка внешнего вида строки таблицы
+        li.style.padding = '12px 15px';
+        li.style.margin = '8px 0';
+        li.style.borderRadius = '8px';
+        li.style.display = 'flex';
+        li.style.justifyContent = 'space-between';
+        li.style.alignItems = 'center';
+        li.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+        li.style.color = '#fff';
+        
+        // Если это строка самого игрока — ярко выделяем её в списке
+        if (player.name === currentPlayerName) {
+            li.style.fontWeight = 'bold';
+            li.style.border = '2px solid #0088cc';
+            li.style.backgroundColor = 'rgba(0, 136, 204, 0.25)';
+        }
+        
+        li.innerHTML = `
+            <span>${index + 1}. ${player.name}</span>
+            <span>${formatMoney(player.balance)}</span>
+        `;
+        listEl.appendChild(li);
+    });
+};
+
+// Перехват переключения вкладок для автоматического обновления топа
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tabId) {
+    // Запускаем стандартное переключение вкладок, если оно было создано ранее
+    if (typeof originalSwitchTab === 'function') {
+        originalSwitchTab(tabId);
+    } else {
+        // Если старой функции не нашлось, переключаем вкладки базовым способом
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        const targetTab = document.getElementById(tabId);
+        if (targetTab) targetTab.classList.add('active');
+    }
+    
+    // Если игрок нажал на кнопку 'Топ', сразу же обновляем список лиг на экране
+    if (tabId === 'tab-top') {
+        window.renderTopPlayers();
+    }
+};
+

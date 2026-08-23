@@ -501,9 +501,9 @@ window.createClan = function(clanName) {
 };
 
 
-// НАДЕЖНАЯ ФУНКЦИЯ ИЗМЕНЕНИЯ ЦЕНЫ ВХОДА (С МГНОВЕННЫМ ОБНОВЛЕНИЕМ ЭКРАНА)
-window.changeClanJoinPrice = function(newPrice) {
-    // Если объект состояния клана забыл создаться, инициализируем его
+// ПОЛНОСТЬЮ АВТОНОМНАЯ ФУНКЦИЯ ИЗМЕНЕНИЯ ЦЕНЫ ВХОДА
+window.changeClanJoinPrice = function() {
+    // 1. Инициализируем clanState, если его почему-то нет
     if (!window.clanState) {
         window.clanState = {
             hasClan: false,
@@ -514,27 +514,42 @@ window.changeClanJoinPrice = function(newPrice) {
         };
     }
 
+    // 2. Проверяем, есть ли у игрока вообще клан
     if (!window.clanState.hasClan) {
         alert("У вас еще нет клана, чтобы менять цену входа!");
         return false;
     }
     
-    const parsedPrice = parseFloat(newPrice);
-    if (isNaN(parsedPrice) || parsedPrice < 0) {
-        alert("Введите корректную сумму!");
+    // 3. Сами находим поле ввода в HTML по его ID
+    const inputEl = document.getElementById('clan-price-input');
+    if (!inputEl) {
+        alert("Ошибка: не найдено поле ввода цены в HTML!");
+        return false;
+    }
+
+    const rawValue = inputEl.value;
+    const parsedPrice = parseFloat(rawValue);
+    
+    // 4. Проверяем, что введено реальное число, а не пустота
+    if (rawValue.trim() === "" || isNaN(parsedPrice) || parsedPrice < 0) {
+        alert("Введите корректную сумму больше нуля!");
         return false;
     }
     
-    // Перезаписываем цену входа
+    // 5. Перезаписываем цену входа в память игры
     window.clanState.joinPrice = parsedPrice;
     
-    // Принудительно сохраняем игру и мгновенно перерисовываем экран кланов
+    // 6. Очищаем поле ввода для удобства игрока
+    inputEl.value = "";
+    
+    // 7. Сохраняем в LocalStorage и мгновенно обновляем интерфейс на экране
     if (typeof window.saveGame === 'function') window.saveGame();
     if (typeof window.updateClansUI === 'function') window.updateClansUI();
     
     alert(`Цена вступления в ваш клан успешно изменена!`);
     return true;
 };
+
 
 
 // Функция выхода из клана или его роспуска

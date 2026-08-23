@@ -432,4 +432,127 @@ window.getTelegramUserName = function() {
     return "Игрок (Браузер)";
 };
 
+// Функция создания собственного клана
+window.createClan = function(clanName) {
+    if (!clanName || clanName.trim() === "") {
+        alert("Пожалуйста, введите название клана!");
+        return false;
+    }
+    
+    const price = window.clanConfig.createPrice;
+    if (window.gameState.balance >= price) {
+        window.gameState.balance -= price;
+        window.clanState.hasClan = true;
+        window.clanState.name = clanName.trim();
+        window.clanState.level = 1;
+        window.clanState.isOwner = true; // Помечаем, что игрок — создатель
+        
+        if (typeof window.saveGame === 'function') window.saveGame();
+        if (typeof window.updateUI === 'function') window.updateUI();
+        alert(`Клан "${clanName}" успешно создан!`);
+        return true;
+    } else {
+        alert("Недостаточно денег для создания клана! Требуется 1 000 000 000 USD");
+        return false;
+    }
+};
+
+// Функция изменения цены вступления в свой клан
+window.changeClanJoinPrice = function(newPrice) {
+    if (!window.clanState.hasClan || !window.clanState.isOwner) {
+        alert("Вы должны быть создателем клана, чтобы менять цену входа!");
+        return false;
+    }
+    
+    const parsedPrice = parseFloat(newPrice);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+        alert("Введите корректную сумму!");
+        return false;
+    }
+    
+    window.clanState.joinPrice = parsedPrice;
+    if (typeof window.saveGame === 'function') window.saveGame();
+    alert(`Цена вступления в ваш клан изменена на ${window.formatCurrency ? window.formatCurrency(parsedPrice) : parsedPrice}`);
+    return true;
+};
+
+// Функция выхода из клана или его роспуска
+window.leaveClan = function() {
+    if (!window.clanState.hasClan) return false;
+    
+    let confirmMessage = "Вы уверены, что хотите выйти из клана?";
+    if (window.clanState.isOwner) {
+        confirmMessage = "Вы являетесь создателем этого клана! Если вы выйдете, ваш клан будет полностью распущен, а его уровень сбросится. Продолжить?";
+    }
+    
+    if (confirm(confirmMessage)) {
+        // Полностью очищаем состояние клана у игрока
+        window.clanState.hasClan = false;
+        window.clanState.name = "";
+        window.clanState.level = 1;
+        window.clanState.isOwner = false;
+        window.clanState.joinPrice = 100000000;
+        
+        if (typeof window.saveGame === 'function') window.saveGame();
+        if (typeof window.updateUI === 'function') window.updateUI();
+        alert("Вы покинули клан.");
+        return true;
+    }
+    return false;
+};
+
+
+// Функция обновления интерфейса вкладки кланов
+window.updateClansUI = function() {
+    const createBlock = document.getElementById('clan-create-block');
+    const infoBlock = document.getElementById('clan-info-block');
+    
+    if (!createBlock || !infoBlock) return;
+
+    // Если у игрока есть клан, показываем панель управления, иначе — форму создания
+    if (window.clanState && window.clanState.hasClan) {
+        createBlock.style.display = 'none';
+        infoBlock.style.display = 'block';
+
+        // Обновляем текстовые данные на экране
+        const nameEl = document.getElementById('my-clan-name');
+        const lvlEl = document.getElementById('my-clan-level');
+        const bonusEl = document.getElementById('my-clan-bonus');
+        const priceEl = document.getElementById('my-clan-price');
+
+        if (nameEl) nameEl.innerText = window.clanState.name;
+        if (lvlEl) lvlEl.innerText = window.clanState.level;
+        if (bonusEl) bonusEl.innerText = `x${window.getClanBonusMultiplier().toFixed(2)}`;
+        
+        const formatMoney = (typeof window.formatCurrency === 'function') 
+            ? window.formatCurrency 
+            : (num) => '$' + num.toLocaleString();
+            
+        if (priceEl) priceEl.innerText = formatMoney(window.clanState.joinPrice);
+    } else {
+        createBlock.style.display = 'block';
+        infoBlock.style.display = 'none';
+    }
+};
+
+// Модификация переключения вкладок для автоматического обновления интерфейса кланов
+const originalSwitchTabWithClans = window.switchTab;
+window.switchTab = function(tabId) {
+    if (typeof originalSwitchTabWithClans === 'function') {
+        originalSwitchTabWithClans(tabId);
+    } else {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        const targetTab = document.getElementById(tabId);
+        if (targetTab) targetTab.classList.add('active');
+    }
+    
+    // Если игрок нажал на кнопку 'Кланы', сразу же перерисовываем состояние клана
+    if (tabId === 'tab-clans' && typeof window.updateClansUI === 'function') {
+        window.updateClansUI();
+    }
+};
+
+
+
+
 

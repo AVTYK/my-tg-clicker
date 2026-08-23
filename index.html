@@ -230,6 +230,48 @@
             </section>
         </main>
 
+                <!-- ВКЛАДКА 6: КЛАНЫ -->
+        <main id="tab-clans" class="tab-content">
+            <section class="clans-section">
+                <h2>Кланы Империи</h2>
+                
+                <!-- Блок создания клана (виден, если у игрока нет клана) -->
+                <div id="clan-create-block" class="clan-card">
+                    <h3>Создать свой клан</h3>
+                    <p class="clan-sub">Основание клана стоит 1 000 000 000 USD</p>
+                    <div class="clan-form">
+                        <input type="text" id="clan-name-input" placeholder="Введите название клана..." max="20">
+                        <button class="action-btn buy" onclick="window.createClan(document.getElementById('clan-name-input').value)">Основать клан</button>
+                    </div>
+                </div>
+
+                <!-- Блок управления кланом (виден, если у игрока есть клан) -->
+                <div id="clan-info-block" class="clan-card" style="display: none;">
+                    <h3 id="my-clan-name">Название вашего клана</h3>
+                    <div class="clan-stats">
+                        <div>Уровень клана: <span id="my-clan-level">1</span></div>
+                        <div>Множитель дохода: <span id="my-clan-bonus">x1.05</span></div>
+                        <div>Текущая цена входа: <span id="my-clan-price">100,000,000 USD</span></div>
+                    </div>
+                    
+                    <!-- Управление ценой входа (только для владельца) -->
+                    <div id="clan-owner-controls" class="clan-management">
+                        <h4>Настройка цены вступления</h4>
+                        <div class="clan-form">
+                            <input type="number" id="clan-price-input" placeholder="Новая цена входа...">
+                            <button class="action-btn" onclick="window.changeClanJoinPrice(document.getElementById('clan-price-input').value)">Изменить цену</button>
+                        </div>
+                    </div>
+
+                    <!-- Действие выхода из клана -->
+                    <div class="clan-actions">
+                        <button class="action-btn sell" onclick="window.leaveClan()">Покинуть / Распустить клан</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+
         <!-- ТАБ-БАР НАВИГАЦИИ -->
         <nav class="nav-bar">
             <button id="nav-btn-market" class="nav-btn active" onclick="window.switchTab('tab-market')">Биржа</button>
@@ -238,6 +280,8 @@
             <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
             <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
             <button id="nav-btn-top" class="nav-btn" onclick="window.switchTab('tab-top')">Топ</button>
+            <button id="nav-btn-clans" class="nav-btn" onclick="window.switchTab('tab-clans')">Кланы</button>
+
         </nav>
     </div>
 

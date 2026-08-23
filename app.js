@@ -100,7 +100,7 @@ window.updateUI = function() {
         }
     });
 
-    // 5. Лиги на вкладке ТОП (id из первого описания ТЗ)
+    // 5. Лиги на вкладке ТОП
     const elLeaderLeague = document.getElementById('leaderboard-user-league');
     if (elLeaderLeague) elLeaderLeague.innerText = window.getCurrentLeague();
     
@@ -270,6 +270,3 @@ window.loadGame = function() {
     window.switchTab('tab-market');
 };
 
-document.addEventListener("DOMContentLoaded", function() {
-    window.loadGame();
-});

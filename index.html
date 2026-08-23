@@ -19,11 +19,10 @@
                 <div class="balance-block">
                     <span class="label">Баланс USD</span>
                     <div style="text-align: center; margin-bottom: 10px;">
-    <span id="user-league" style="font-size: 1.2rem; font-weight: bold; color: #ffaa00; text-shadow: 0 0 10px rgba(255,170,0,0.5);">
-        Бронзовая лига 🥉
-    </span>
-</div>
-
+                        <span id="user-league" style="font-size: 1.2rem; font-weight: bold; color: #ffaa00; text-shadow: 0 0 10px rgba(255,170,0,0.5);">
+                            Бронзовая лига 🥉
+                        </span>
+                    </div>
                     <div id="balance-usd">0.00 USD</div>
                 </div>
             </div>
@@ -222,19 +221,6 @@
             </section>
         </main>
 
-<!-- ТАБ-БАР НАВИГАЦИИ -->
-        <nav class="nav-bar">
-            <button id="nav-btn-market" class="nav-btn active" onclick="window.switchTab('tab-market')">Биржа</button>
-            <button id="nav-btn-upgrades" class="nav-btn" onclick="window.switchTab('tab-upgrades')">Апгрейды</button>
-            <button id="nav-btn-crypto" class="nav-btn" onclick="window.switchTab('tab-crypto')">Трейдинг</button>
-            <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
-            <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
-            <!-- ДОБАВИЛИ КНОПКУ ТОП СЮДА -->
-            <button id="nav-btn-leaderboard" class="nav-btn" onclick="window.switchTab('tab-leaderboard')">ТОП</button>
-        </nav>
-    </div>
-
-    <!-- ИСПРАВЛЕНО: Прямое подключение скрипта без папки js -->
-    <script src="app.js"></script>
-</body>
-</html>
+        <!-- ВКЛАДКА 6: ТОП ИГРОКОВ -->
+        <main id="tab-leaderboard" class="tab-content">
+            <section class="leaderboard-section" style="text-align: center; padding: 20px 10px;">

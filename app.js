@@ -353,7 +353,8 @@ window.renderTopPlayers = function() {
     
     // Создаем копию списка лиг
     const allPlayers = [...window.topPlayersMock];
-    const currentPlayerName = "⭐ Ваш текущий счет";
+const currentPlayerName = "⭐ " + window.getTelegramUserName();
+
     
     // Добавляем игрока в этот список для сравнения
     allPlayers.push({ name: currentPlayerName, balance: currentBalance });
@@ -413,4 +414,22 @@ window.switchTab = function(tabId) {
         window.renderTopPlayers();
     }
 };
+
+// Функция, которая безопасно достает имя пользователя из Telegram API
+window.getTelegramUserName = function() {
+    // Проверяем, запущено ли приложение внутри Telegram
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+        const user = window.Telegram.WebApp.initDataUnsafe.user;
+        
+        // Пробуем взять юзернейм (@username), если его нет — имя и фамилию
+        if (user.username) {
+            return "@" + user.username;
+        } else if (user.first_name) {
+            return user.first_name + (user.last_name ? " " + user.last_name : "");
+        }
+    }
+    // Если игра открыта просто в браузере через Live Server, вернем стандартное имя
+    return "Игрок (Браузер)";
+};
+
 

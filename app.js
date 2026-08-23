@@ -17,17 +17,37 @@ window.gameState = {
 // 2. БАЗА ДАННЫХ УЛУЧШЕНИЙ (UPGRADES)
 // ==========================================
 window.upgrades = {
-    1: { name: "Накрутка ботов", basePrice: 60, priceMultiplier: 1.5, level: 0, passiveIncome: 1 },
-    2: { name: "Скам-канал", basePrice: 300, priceMultiplier: 1.5, level: 0, passiveIncome: 5 },
-    3: { name: "Слив инсайдов", basePrice: 1000, priceMultiplier: 1.5, level: 0, passiveIncome: 20 },
-    4: { name: "Подпольное казино", basePrice: 4000, priceMultiplier: 1.5, level: 0, passiveIncome: 90 },
-    5: { name: "Дубайская вилла", basePrice: 15000, priceMultiplier: 1.5, level: 0, passiveIncome: 350 },
-    6: { name: "Золотая шахта", basePrice: 55000, priceMultiplier: 1.5, level: 0, passiveIncome: 1400 },
-    7: { name: "Оружейный завод", basePrice: 200000, priceMultiplier: 1.5, level: 0, passiveIncome: 5500 },
-    8: { name: "Нефтяная вышка", basePrice: 750000, priceMultiplier: 1.5, level: 0, passiveIncome: 22000 },
-    9: { name: "Собственная ЧВК", basePrice: 3500000, priceMultiplier: 1.5, level: 0, passiveIncome: 110000 },
-    10: { name: "Ложа иллюминатов", basePrice: 15000000, priceMultiplier: 1.5, level: 0, passiveIncome: 500000 }
+    // Окупаемость ~2 минуты. Цена растет на 15% за уровень
+    1: { name: "Накрутка ботов", basePrice: 120, priceMultiplier: 1.15, level: 0, passiveIncome: 1 },
+    
+    // Окупаемость ~4 минуты. Цена растет на 20%
+    2: { name: "Скам-канал", basePrice: 1200, priceMultiplier: 1.20, level: 0, passiveIncome: 5 },
+    
+    // Окупаемость ~8 минут. Цена растет на 25%
+    3: { name: "Слив инсайдов", basePrice: 9600, priceMultiplier: 1.25, level: 0, passiveIncome: 20 },
+    
+    // Окупаемость ~15 минут. Цена растет на 30%
+    4: { name: "Подпольное казино", basePrice: 72000, priceMultiplier: 1.30, level: 0, passiveIncome: 80 },
+    
+    // Окупаемость ~25 минут. Цена растет на 35%
+    5: { name: "Дубайская вилла", basePrice: 600000, priceMultiplier: 1.35, level: 0, passiveIncome: 400 },
+    
+    // Окупаемость ~40 минут. Цена растет на 40%
+    6: { name: "Золотая шахта", basePrice: 4800000, priceMultiplier: 1.40, level: 0, passiveIncome: 2000 },
+    
+    // Окупаемость ~1 час. Цена растет на 45%
+    7: { name: "Оружейный завод", basePrice: 36000000, priceMultiplier: 1.45, level: 0, passiveIncome: 10000 },
+    
+    // Окупаемость ~1.5 часа. Цена удваивается с каждым уровнем
+    8: { name: "Нефтяная вышка", basePrice: 270000000, priceMultiplier: 1.50, level: 0, passiveIncome: 50000 },
+    
+    // Окупаемость ~2 часа. Элитный бизнес
+    9: { name: "Собственная ЧВК", basePrice: 2160000000, priceMultiplier: 1.55, level: 0, passiveIncome: 300000 },
+    
+    // Финал. Окупаемость ~3 часа чистого времени на один уровень!
+    10: { name: "Ложа иллюминатов", basePrice: 20000000000, priceMultiplier: 1.60, level: 0, passiveIncome: 2000000 }
 };
+
 
 
 // ==========================================

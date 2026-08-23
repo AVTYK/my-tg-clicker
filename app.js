@@ -54,6 +54,15 @@ window.upgrades = {
 // ==========================================
 // 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (UTILS)
 // ==========================================
+window.getCurrentLeague = function() {
+    const e = window.gameState.totalEarned || 0;
+    if (e <= 5000) return { name: "Бронзовая лига 🥉", id: "bronze" };
+    if (e <= 100000) return { name: "Серебряная лига 🥈", id: "silver" };
+    if (e <= 2000000) return { name: "Золотая лига 🥇", id: "gold" };
+    if (e <= 50000000) return { name: "Платиновая лига 💎", id: "platinum" };
+    return { name: "Лига Иллюминатов 👑", id: "elite" };
+};
+
 window.updateUI = function() {
     const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
     const convertedBalance = (window.gameState.balance * rate).toFixed(2);

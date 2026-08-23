@@ -432,30 +432,65 @@ window.getTelegramUserName = function() {
     return "Игрок (Браузер)";
 };
 
-// Функция создания собственного клана
+// НАДЕЖНАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ СОЗДАНИЯ КЛАНА (БЕЗ ВНЕШНИХ ЗАВИСИМОСТЕЙ)
 window.createClan = function(clanName) {
     if (!clanName || clanName.trim() === "") {
         alert("Пожалуйста, введите название клана!");
         return false;
     }
     
-    const price = window.clanConfig.createPrice;
-    if (window.gameState.balance >= price) {
-        window.gameState.balance -= price;
-        window.clanState.hasClan = true;
-        window.clanState.name = clanName.trim();
-        window.clanState.level = 1;
-        window.clanState.isOwner = true; // Помечаем, что игрок — создатель
-        
-        if (typeof window.saveGame === 'function') window.saveGame();
-        if (typeof window.updateUI === 'function') window.updateUI();
-        alert(`Клан "${clanName}" успешно создан!`);
-        return true;
+    // Прямо здесь жестко прописываем цену и базовую структуру, если ее забыл создать браузер
+    const createPrice = 1000000000; // 1 миллиард USD
+    
+    // Проверяем и создаем clanState, если его нет
+    if (!window.clanState) {
+        window.clanState = {
+            hasClan: false,
+            name: "",
+            level: 1,
+            joinPrice: 100000000,
+            totalInvested: 0
+        };
+    }
+    
+    // Проверяем и создаем clanConfig на будущее, чтобы другие функции тоже не ломались
+    if (!window.clanConfig) {
+        window.clanConfig = {
+            createPrice: 1000000000,
+            baseUpgradePrice: 2000000000,
+            priceMultiplier: 1.7,
+            bonusPerLevel: 0.05
+        };
+    }
+
+    // Проверяем наличие денег на балансе gameState
+    if (window.gameState && typeof window.gameState.balance !== 'undefined') {
+        if (window.gameState.balance >= createPrice) {
+            window.gameState.balance -= createPrice;
+            
+            // Записываем данные созданного клана
+            window.clanState.hasClan = true;
+            window.clanState.name = clanName.trim();
+            window.clanState.level = 1;
+            window.clanState.isOwner = true;
+            
+            // Обновляем всю игру
+            if (typeof window.saveGame === 'function') window.saveGame();
+            if (typeof window.updateUI === 'function') window.updateUI();
+            if (typeof window.updateClansUI === 'function') window.updateClansUI();
+            
+            alert(`Клан "${clanName}" успешно создан!`);
+            return true;
+        } else {
+            alert("Недостаточно денег для создания клана! Требуется 1 000 000 000 USD");
+            return false;
+        }
     } else {
-        alert("Недостаточно денег для создания клана! Требуется 1 000 000 000 USD");
+        alert("Ошибка архитектуры: Не найден баланс игры window.gameState.balance");
         return false;
     }
 };
+
 
 // Функция изменения цены вступления в свой клан
 window.changeClanJoinPrice = function(newPrice) {

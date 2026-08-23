@@ -219,24 +219,20 @@ window.playCasino = function(betUSD) {
 };
 
 // ==========================================
-// 6. НАВИГАЦИЯ (Переключение классов .active строго по CSS-селекторам)
+// 6. НАВИГАЦИЯ
 // ==========================================
 window.switchTab = function(tabId) {
-    // 1. Скрываем все вкладки убирая класс active
     const tabs = document.querySelectorAll('.tab-content');
     tabs.forEach(tab => tab.classList.remove('active'));
     
-    // 2. Показываем нужную вкладку добавляя класс active
     const activeTab = document.getElementById(tabId);
     if (activeTab) {
         activeTab.classList.add('active');
     }
 
-    // 3. Переключаем активную кнопку в меню навигации
     const navButtons = document.querySelectorAll('.nav-btn');
     navButtons.forEach(btn => btn.classList.remove('active'));
 
-    // Ищем кнопку, у которой в onclick прописан нужный tabId
     navButtons.forEach(btn => {
         if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
             btn.classList.add('active');
@@ -263,3 +259,17 @@ window.loadGame = function() {
     if (save) {
         try {
             const parsed = JSON.parse(save);
+            window.gameState = { ...window.gameState, ...parsed };
+            if (parsed.upgrades) {
+                window.gameState.upgrades = { ...window.gameState.upgrades, ...parsed.upgrades };
+            }
+        } catch (e) {
+            console.error("Ошибка чтения сохранения", e);
+        }
+    }
+    window.switchTab('tab-market');
+};
+
+document.addEventListener("DOMContentLoaded", function() {
+    window.loadGame();
+});

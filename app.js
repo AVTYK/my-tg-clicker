@@ -17,17 +17,18 @@ window.gameState = {
 // 2. БАЗА ДАННЫХ УЛУЧШЕНИЙ (UPGRADES)
 // ==========================================
 window.upgrades = {
-    1: { name: "Накрутка ботов", basePrice: 60, priceMultiplier: 1.5, level: 0, passiveIncome: 0.2 },
-    2: { name: "Скам-канал", basePrice: 300, priceMultiplier: 1.5, level: 0, passiveIncome: 1.2 },
-    3: { name: "Слив инсайдов", basePrice: 1000, priceMultiplier: 1.5, level: 0, passiveIncome: 5 },
-    4: { name: "Подпольное казино", basePrice: 4000, priceMultiplier: 1.5, level: 0, passiveIncome: 24 },
-    5: { name: "Дубайская вилла", basePrice: 15000, priceMultiplier: 1.5, level: 0, passiveIncome: 100 },
-    6: { name: "Золотая шахта", basePrice: 55000, priceMultiplier: 1.5, level: 0, passiveIncome: 420 },
-    7: { name: "Оружейный завод", basePrice: 200000, priceMultiplier: 1.5, level: 0, passiveIncome: 1800 },
-    8: { name: "Нефтяная вышка", basePrice: 750000, priceMultiplier: 1.5, level: 0, passiveIncome: 7500 },
-    9: { name: "Собственная ЧВК", basePrice: 3500000, priceMultiplier: 1.5, level: 0, passiveIncome: 38000 },
-    10: { name: "Ложа иллюминатов", basePrice: 15000000, priceMultiplier: 1.5, level: 0, passiveIncome: 200000 }
+    1: { name: "Накрутка ботов", basePrice: 60, priceMultiplier: 1.5, level: 0, passiveIncome: 1 },
+    2: { name: "Скам-канал", basePrice: 300, priceMultiplier: 1.5, level: 0, passiveIncome: 5 },
+    3: { name: "Слив инсайдов", basePrice: 1000, priceMultiplier: 1.5, level: 0, passiveIncome: 20 },
+    4: { name: "Подпольное казино", basePrice: 4000, priceMultiplier: 1.5, level: 0, passiveIncome: 90 },
+    5: { name: "Дубайская вилла", basePrice: 15000, priceMultiplier: 1.5, level: 0, passiveIncome: 350 },
+    6: { name: "Золотая шахта", basePrice: 55000, priceMultiplier: 1.5, level: 0, passiveIncome: 1400 },
+    7: { name: "Оружейный завод", basePrice: 200000, priceMultiplier: 1.5, level: 0, passiveIncome: 5500 },
+    8: { name: "Нефтяная вышка", basePrice: 750000, priceMultiplier: 1.5, level: 0, passiveIncome: 22000 },
+    9: { name: "Собственная ЧВК", basePrice: 3500000, priceMultiplier: 1.5, level: 0, passiveIncome: 110000 },
+    10: { name: "Ложа иллюминатов", basePrice: 15000000, priceMultiplier: 1.5, level: 0, passiveIncome: 500000 }
 };
+
 
 // ==========================================
 // 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (UTILS)
@@ -286,3 +287,27 @@ window.loadGame = function() {
     }
 };
 
+// ==========================================
+// 6. ЕДИНАЯ ТОЧКА ИНИЦИАЛИЗАЦИИ И ЦИКЛЫ
+// ==========================================
+window.onload = function() {
+    window.loadGame();
+    window.updateUI();
+
+    setInterval(function() {
+        const passiveIncome = window.calculatePassiveIncome();
+        if (passiveIncome > 0) {
+            window.gameState.balance += passiveIncome;
+        }
+        
+        const priceChangePercent = (Math.random() * 5 - 2.5) / 100;
+        window.gameState.cryptoPrice += window.gameState.cryptoPrice * priceChangePercent;
+        if (window.gameState.cryptoPrice < 5000) {
+            window.gameState.cryptoPrice = 5000;
+        }
+
+        window.updateUI();
+    }, 1000);
+
+    setInterval(window.saveGame, 10000);
+};

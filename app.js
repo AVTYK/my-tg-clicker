@@ -2,7 +2,8 @@
 // 1. СОСТОЯНИЕ ИГРЫ (STATE)
 // ==========================================
 window.gameState = {
-    balance: 0, 
+    balance: 0,
+     totalEarned: 0,
     cryptoBalance: 0, 
     selectedCurrency: 'USD', 
     currencyRates: {
@@ -249,7 +250,12 @@ window.tradeCrypto = function(action) {
 
 window.startLaborShift = function() {
     const clickPower = window.calculateClickPower();
+    
+    // Плюс идет в обычный кошелек:
     window.gameState.balance += clickPower;
+    
+    // Плюс идет в общую историю богатства для лиги:
+    window.gameState.totalEarned += clickPower; 
     
     const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
     const displayText = "+" + (clickPower * rate).toFixed(1) + " " + window.gameState.selectedCurrency;
@@ -257,6 +263,7 @@ window.startLaborShift = function() {
     
     window.updateUI();
 };
+
 
 window.copyInviteLink = function() {
     const myBot = "AvtykClicker_bot";

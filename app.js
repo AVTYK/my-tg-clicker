@@ -348,14 +348,8 @@ window.renderTopPlayers = function() {
     listEl.innerHTML = '';
     
     // Пытаемся автоматически найти, где в коде лежит ваш текущий баланс
-    let currentBalance = 0;
-    if (window.playerState && typeof window.playerState.balanceUSD !== 'undefined') {
-        currentBalance = window.playerState.balanceUSD;
-    } else if (typeof window.balanceUSD !== 'undefined') {
-        currentBalance = window.balanceUSD;
-    } else if (typeof window.balance !== 'undefined') {
-        currentBalance = window.balance;
-    }
+        let currentBalance = (window.gameState && typeof window.gameState.balance !== 'undefined') ? window.gameState.balance : 0;
+
     
     // Создаем копию списка лиг
     const allPlayers = [...window.topPlayersMock];

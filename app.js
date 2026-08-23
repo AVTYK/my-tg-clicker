@@ -284,10 +284,13 @@ window.saveGame = function() {
     const saveObject = {
         balance: window.gameState.balance,
         cryptoBalance: window.gameState.cryptoBalance,
-        upgrades: savedUpgrades
+        upgrades: savedUpgrades,
+        // ВСТАВЛЕНО: Сохраняем состояние клана в общий сейв
+        clanState: window.clanState
     };
     localStorage.setItem('cryptoTycoonGame', JSON.stringify(saveObject));
 };
+
 
 window.loadGame = function() {
     const savedGame = localStorage.getItem('cryptoTycoonGame');
@@ -304,8 +307,14 @@ window.loadGame = function() {
                 }
             }
         }
+
+        // ВСТАВЛЕНО: Восстанавливаем состояние клана из сохранения
+        if (parsedData.clanState) {
+            window.clanState = parsedData.clanState;
+        }
     }
 };
+
 
 // ==========================================
 // 6. ЕДИНАЯ ТОЧКА ИНИЦИАЛИЗАЦИИ И ЦИКЛЫ
@@ -492,10 +501,21 @@ window.createClan = function(clanName) {
 };
 
 
-// Функция изменения цены вступления в свой клан
+// НАДЕЖНАЯ ФУНКЦИЯ ИЗМЕНЕНИЯ ЦЕНЫ ВХОДА (С МГНОВЕННЫМ ОБНОВЛЕНИЕМ ЭКРАНА)
 window.changeClanJoinPrice = function(newPrice) {
-    if (!window.clanState.hasClan || !window.clanState.isOwner) {
-        alert("Вы должны быть создателем клана, чтобы менять цену входа!");
+    // Если объект состояния клана забыл создаться, инициализируем его
+    if (!window.clanState) {
+        window.clanState = {
+            hasClan: false,
+            name: "",
+            level: 1,
+            joinPrice: 100000000,
+            totalInvested: 0
+        };
+    }
+
+    if (!window.clanState.hasClan) {
+        alert("У вас еще нет клана, чтобы менять цену входа!");
         return false;
     }
     
@@ -505,11 +525,17 @@ window.changeClanJoinPrice = function(newPrice) {
         return false;
     }
     
+    // Перезаписываем цену входа
     window.clanState.joinPrice = parsedPrice;
+    
+    // Принудительно сохраняем игру и мгновенно перерисовываем экран кланов
     if (typeof window.saveGame === 'function') window.saveGame();
-    alert(`Цена вступления в ваш клан изменена на ${window.formatCurrency ? window.formatCurrency(parsedPrice) : parsedPrice}`);
+    if (typeof window.updateClansUI === 'function') window.updateClansUI();
+    
+    alert(`Цена вступления в ваш клан успешно изменена!`);
     return true;
 };
+
 
 // Функция выхода из клана или его роспуска
 window.leaveClan = function() {

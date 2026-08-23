@@ -98,7 +98,14 @@ window.updateUI = function() {
             priceEl.innerText = (currentPrice * rate).toFixed(0) + " " + window.gameState.selectedCurrency;
         }
     }
+
+    // ИСПРАВЛЕНО: Код отображения лиги встроен на своё законное место
+    const leagueEl = document.getElementById('user-league');
+    if (leagueEl) {
+        leagueEl.innerText = window.getCurrentLeague().name;
+    }
 };
+
 
 window.buyUpgrade = function(upgradeId) {
     const upgrade = window.upgrades[upgradeId];

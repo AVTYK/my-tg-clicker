@@ -628,6 +628,18 @@ window.switchTab = function(tabId) {
     }
 };
 
+// Функция расчета текущего множителя прибыли от уровня клана
+window.getClanBonusMultiplier = function() {
+    // Если объекта клана еще нет или игрок без клана, бонус равен x1.00
+    if (!window.clanState || !window.clanState.hasClan) return 1.0;
+    
+    const bonusPerLevel = 0.05; // +5% за каждый уровень
+    const currentLevel = window.clanState.level || 1;
+    
+    return 1.0 + (currentLevel * bonusPerLevel);
+};
+
+
 
 
 

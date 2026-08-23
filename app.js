@@ -1,229 +1,162 @@
 // ==========================================
-// 1. ГЛОБАЛЬНОЕ СОСТОЯНИЕ ИГРЫ (window.gameState)
+// 1. СОСТОЯНИЕ ИГРЫ (STATE)
 // ==========================================
 window.gameState = {
-    balanceUSD: 0,
-    balanceBTC: 0,
-    currentCurrency: 'USD',
-    totalEarned: 0,
-    clickPower: 1,
+    balance: 0, 
+    cryptoBalance: 0, 
+    selectedCurrency: 'USD', 
+    currencyRates: {
+        USD: 1,
+        EUR: 0.92,
+        RUB: 90
+    },
+    cryptoPrice: 50000 
+};
+
+// ==========================================
+// 2. БАЗА ДАННЫХ УЛУЧШЕНИЙ (UPGRADES)
+// ==========================================
+window.upgrades = {
+    // Окупаемость ~2 минуты. Цена растет на 15% за уровень
+    1: { name: "Накрутка ботов", basePrice: 120, priceMultiplier: 1.15, level: 0, passiveIncome: 1 },
     
-    // Уровни апгрейдов строго по ID (1-10) из вашей верстки
-    upgrades: {
-        1: 0, 2: 0, 3: 0, 4: 0, 5: 0,
-        6: 0, 7: 0, 8: 0, 9: 0, 10: 0
-    }
+    // Окупаемость ~4 минуты. Цена растет на 20%
+    2: { name: "Скам-канал", basePrice: 1200, priceMultiplier: 1.20, level: 0, passiveIncome: 5 },
+    
+    // Окупаемость ~8 минут. Цена растет на 25%
+    3: { name: "Слив инсайдов", basePrice: 9600, priceMultiplier: 1.25, level: 0, passiveIncome: 20 },
+    
+    // Окупаемость ~15 минут. Цена растет на 30%
+    4: { name: "Подпольное казино", basePrice: 72000, priceMultiplier: 1.30, level: 0, passiveIncome: 80 },
+    
+    // Окупаемость ~25 минут. Цена растет на 35%
+    5: { name: "Дубайская вилла", basePrice: 600000, priceMultiplier: 1.35, level: 0, passiveIncome: 400 },
+    
+    // Окупаемость ~40 минут. Цена растет на 40%
+    6: { name: "Золотая шахта", basePrice: 4800000, priceMultiplier: 1.40, level: 0, passiveIncome: 2000 },
+    
+    // Окупаемость ~1 час. Цена растет на 45%
+    7: { name: "Оружейный завод", basePrice: 36000000, priceMultiplier: 1.45, level: 0, passiveIncome: 10000 },
+    
+    // Окупаемость ~1.5 часа. Цена удваивается с каждым уровнем
+    8: { name: "Нефтяная вышка", basePrice: 270000000, priceMultiplier: 1.50, level: 0, passiveIncome: 50000 },
+    
+    // Окупаемость ~2 часа. Элитный бизнес
+    9: { name: "Собственная ЧВК", basePrice: 2160000000, priceMultiplier: 1.55, level: 0, passiveIncome: 300000 },
+    
+    // Финал. Окупаемость ~3 часа чистого времени на один уровень!
+    10: { name: "Ложа иллюминатов", basePrice: 20000000000, priceMultiplier: 1.60, level: 0, passiveIncome: 2000000 }
 };
 
-// Константы экономики
-const CURRENCY_RATES = { USD: 1, EUR: 0.92, RUB: 90 };
-const BTC_PRICE_USD = 50000;
 
-// Массив лиг для динамического расчета
-const LEAGUES = [
-    { name: 'Бронзовая лига 🥉', minEarned: 0 },
-    { name: 'Серебряная лига 🥈', minEarned: 5000 },
-    { name: 'Золотая лига 🥇', minEarned: 25000 },
-    { name: 'Платиновая лига 💎', minEarned: 100000 },
-    { name: 'Иллюминаты 👁️', minEarned: 1000000 }
-];
-
-// Конфигурация стоимости и пассивного дохода апгрейдов (1-10)
-const UPGRADE_CONFIG = {
-    1: { baseCost: 60, costMultiplier: 1.15, baseIncome: 1 },
-    2: { baseCost: 300, costMultiplier: 1.15, baseIncome: 5 },
-    3: { baseCost: 1000, costMultiplier: 1.15, baseIncome: 25 },
-    4: { baseCost: 4000, costMultiplier: 1.15, baseIncome: 120 },
-    5: { baseCost: 15000, costMultiplier: 1.15, baseIncome: 650 },
-    6: { baseCost: 55000, costMultiplier: 1.15, baseIncome: 3500 },
-    7: { baseCost: 200000, costMultiplier: 1.15, baseIncome: 18000 },
-    8: { baseCost: 750000, costMultiplier: 1.15, baseIncome: 95000 },
-    9: { baseCost: 3500000, costMultiplier: 1.15, baseIncome: 500000 },
-    10: { baseCost: 15000000, costMultiplier: 1.15, baseIncome: 3000000 }
-};
 
 // ==========================================
-// 2. СИСТЕМА ЛИГ И РЕЙТИНГА
-// ==========================================
-window.getCurrentLeague = function() {
-    let currentLeague = LEAGUES[0].name;
-    for (let i = LEAGUES.length - 1; i >= 0; i--) {
-        if (window.gameState.totalEarned >= LEAGUES[i].minEarned) {
-            currentLeague = LEAGUES[i].name;
-            break;
-        }
-    }
-    return currentLeague;
-};
-
-window.getWorldRank = function() {
-    if (window.gameState.totalEarned <= 0) return 999999;
-    const rank = Math.floor(1000000 / (Math.log10(window.gameState.totalEarned + 1) + 1));
-    return Math.max(1, rank);
-};
-
-// ==========================================
-// 3. ФУНКЦИЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА (UI)
+// 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (UTILS)
 // ==========================================
 window.updateUI = function() {
-    const rate = CURRENCY_RATES[window.gameState.currentCurrency];
-    const symbol = window.gameState.currentCurrency === 'USD' ? 'USD' : window.gameState.currentCurrency === 'EUR' ? 'EUR' : 'RUB';
+    const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
+    const convertedBalance = (window.gameState.balance * rate).toFixed(2);
     
-    // 1. Обновление балансов в шапке
-    const convertedBalance = Math.floor(window.gameState.balanceUSD * rate);
-    const elBalanceUSD = document.getElementById('balance-usd');
-    if (elBalanceUSD) elBalanceUSD.innerText = `${convertedBalance.toLocaleString()} ${symbol}`;
-    
-    const elBalanceBTC = document.getElementById('balance-btc');
-    if (elBalanceBTC) elBalanceBTC.innerText = window.gameState.balanceBTC.toFixed(4) + ' BTC';
+    const balanceUsdEl = document.getElementById('balance-usd');
+    if (balanceUsdEl) {
+        balanceUsdEl.innerText = convertedBalance + " " + window.gameState.selectedCurrency;
+    }
 
-    // 2. Лига в шапке
-    const elUserLeague = document.getElementById('user-league');
-    if (elUserLeague) elUserLeague.innerText = window.getCurrentLeague();
+    const balanceBtcEl = document.getElementById('balance-btc');
+    if (balanceBtcEl) {
+        balanceBtcEl.innerText = window.gameState.cryptoBalance.toFixed(4) + " BTC";
+    }
 
-    // 3. Статистика дохода и клика в шапке
-    const elPassiveIncome = document.getElementById('ui-pincome');
-    if (elPassiveIncome) elPassiveIncome.innerText = Math.floor(window.calculatePassiveIncome() * rate).toLocaleString();
-    
-    const elClickPower = document.getElementById('ui-cpower');
-    if (elClickPower) elClickPower.innerText = Math.floor(window.gameState.clickPower * rate).toLocaleString();
+    const liveRateEl = document.getElementById('live-rate');
+    if (liveRateEl) {
+        const convertedCryptoPrice = (window.gameState.cryptoPrice * rate).toFixed(2);
+        liveRateEl.innerText = convertedCryptoPrice + " " + window.gameState.selectedCurrency;
+    }
 
-    // 4. Селекторы валют (переключение активного класса)
-    ['USD', 'EUR', 'RUB'].forEach(cur => {
-        const btn = document.getElementById(`curr-btn-${cur}`);
-        if (btn) {
-            if (cur === window.gameState.currentCurrency) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
+    const uiPincomeEl = document.getElementById('ui-pincome');
+    if (uiPincomeEl) {
+        uiPincomeEl.innerText = (window.calculatePassiveIncome() * rate).toFixed(2);
+    }
+
+    const uiCpowerEl = document.getElementById('ui-cpower');
+    if (uiCpowerEl) {
+        uiCpowerEl.innerText = (window.calculateClickPower() * rate).toFixed(2);
+    }
+
+    for (let id in window.upgrades) {
+        const upgrade = window.upgrades[id];
+        const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
+        
+        const levelEl = document.getElementById("upgrade-level-" + id);
+        const priceEl = document.getElementById("upgrade-price-" + id);
+        
+        if (levelEl) {
+            levelEl.innerText = "Lvl " + upgrade.level;
         }
-    });
-
-    // 5. Лиги на вкладке ТОП
-    const elLeaderLeague = document.getElementById('leaderboard-user-league');
-    if (elLeaderLeague) elLeaderLeague.innerText = window.getCurrentLeague();
-    
-    const elLeaderRank = document.getElementById('leaderboard-user-rank');
-    if (elLeaderRank) elLeaderRank.innerText = '#' + window.getWorldRank().toLocaleString();
-
-    // 6. Карточки улучшений (1-10) строго по ID из HTML
-    for (let id in UPGRADE_CONFIG) {
-        const currentLevel = window.gameState.upgrades[id] || 0;
-        const config = UPGRADE_CONFIG[id];
-        const currentCost = Math.floor(config.baseCost * Math.pow(config.costMultiplier, currentLevel));
-        
-        const elLevel = document.getElementById(`upgrade-level-${id}`);
-        if (elLevel) elLevel.innerText = `Lvl ${currentLevel}`;
-        
-        const elPrice = document.getElementById(`upgrade-price-${id}`);
-        if (elPrice) elPrice.innerText = `${Math.floor(currentCost * rate).toLocaleString()} ${symbol}`;
+        if (priceEl) {
+            priceEl.innerText = (currentPrice * rate).toFixed(0) + " " + window.gameState.selectedCurrency;
+        }
     }
 };
 
-// ==========================================
-// 4. МЕХАНИКА КЛИКА И ПАССИВНОГО ДОХОДА
-// ==========================================
-window.startLaborShift = function() {
-    window.gameState.balanceUSD += window.gameState.clickPower;
-    window.gameState.totalEarned += window.gameState.clickPower;
-    window.updateUI();
+window.buyUpgrade = function(upgradeId) {
+    const upgrade = window.upgrades[upgradeId];
+    if (!upgrade) return;
+
+    const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
+
+    if (window.gameState.balance >= currentPrice) {
+        window.gameState.balance -= currentPrice;
+        upgrade.level += 1;
+        window.updateUI();
+        window.saveGame();
+    } else {
+        alert("Недостаточно USD для покупки улучшения!");
+    }
+};
+
+window.calculateClickPower = function() {
+    return 1;
 };
 
 window.calculatePassiveIncome = function() {
-    let income = 0;
-    for (let id in UPGRADE_CONFIG) {
-        const level = window.gameState.upgrades[id] || 0;
-        income += level * UPGRADE_CONFIG[id].baseIncome;
+    let totalPassive = 0;
+    for (let id in window.upgrades) {
+        const upgrade = window.upgrades[id];
+        totalPassive += upgrade.level * upgrade.passiveIncome;
     }
-    return income;
+    return totalPassive;
 };
 
-// Таймер пассивного заработка
-setInterval(() => {
-    const income = window.calculatePassiveIncome();
-    if (income > 0) {
-        window.gameState.balanceUSD += income;
-        window.gameState.totalEarned += income;
-        window.updateUI();
-    }
-}, 1000);
+window.createFloatingText = function(text) {
+    const area = document.querySelector('.click-area');
+    if (!area) return;
 
-// ==========================================
-// 5. ИГРОВЫЕ ДЕЙСТВИЯ (УЛУЧШЕНИЯ, КРИПТА, КАЗИНО)
-// ==========================================
-window.changeCurrency = function(newCurrency) {
-    if (CURRENCY_RATES[newCurrency]) {
-        window.gameState.currentCurrency = newCurrency;
-        window.updateUI();
-    }
-};
-
-window.buyUpgrade = function(id) {
-    const currentLevel = window.gameState.upgrades[id] || 0;
-    const config = UPGRADE_CONFIG[id];
-    const cost = Math.floor(config.baseCost * Math.pow(config.costMultiplier, currentLevel));
-
-    if (window.gameState.balanceUSD >= cost) {
-        window.gameState.balanceUSD -= cost;
-        window.gameState.upgrades[id] = currentLevel + 1;
-        window.updateUI();
-    }
-};
-
-window.tradeCrypto = function(action) {
-    const amount = 0.01;
-    const costUSD = amount * BTC_PRICE_USD;
-    const elStatus = document.getElementById('exchange-status');
-
-    if (action === 'buy') {
-        if (window.gameState.balanceUSD >= costUSD) {
-            window.gameState.balanceUSD -= costUSD;
-            window.gameState.balanceBTC += amount;
-            if (elStatus) elStatus.innerText = "Успешно куплено 0.01 BTC";
-        } else {
-            if (elStatus) elStatus.innerText = "Недостаточно средств (USD)";
-        }
-    } else if (action === 'sell') {
-        if (window.gameState.balanceBTC >= amount) {
-            window.gameState.balanceBTC -= amount;
-            window.gameState.balanceUSD += costUSD;
-            window.gameState.totalEarned += costUSD;
-            if (elStatus) elStatus.innerText = "Успешно продано 0.01 BTC";
-        } else {
-            if (elStatus) elStatus.innerText = "Недостаточно BTC для продажи";
-        }
-    }
-    window.updateUI();
-};
-
-window.playCasino = function(betUSD) {
-    const elResult = document.getElementById('casino-result');
-    if (window.gameState.balanceUSD < betUSD) {
-        if (elResult) elResult.innerText = "Недостаточно USD для ставки";
-        return;
-    }
+    const span = document.createElement('span');
+    span.classList.add('floating-number');
+    span.innerText = text;
     
-    window.gameState.balanceUSD -= betUSD;
-    const isWin = Math.random() < 0.48;
-
-    if (isWin) {
-        const prize = betUSD * 2;
-        window.gameState.balanceUSD += prize;
-        window.gameState.totalEarned += betUSD; 
-        if (elResult) elResult.innerText = `Победа! +${prize} USD`;
-    } else {
-        if (elResult) elResult.innerText = "Проигрыш! Попробуйте еще раз";
-    }
-    window.updateUI();
+    const x = 40 + Math.random() * 20;
+    const y = 40 + Math.random() * 20;
+    
+    span.style.left = x + "%";
+    span.style.top = y + "%";
+    
+    area.appendChild(span);
+    
+    setTimeout(function() {
+        span.remove();
+    }, 800);
 };
 
 // ==========================================
-// 6. НАВИГАЦИЯ
+// 4. ИНЛАЙН ОБРАБОТЧИКИ СОБЫТИЙ (WINDOW FUNCTIONS)
 // ==========================================
 window.switchTab = function(tabId) {
     const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => tab.classList.remove('active'));
+    tabs.forEach(function(tab) {
+        tab.classList.remove('active');
+    });
     
     const activeTab = document.getElementById(tabId);
     if (activeTab) {
@@ -231,42 +164,170 @@ window.switchTab = function(tabId) {
     }
 
     const navButtons = document.querySelectorAll('.nav-btn');
-    navButtons.forEach(btn => btn.classList.remove('active'));
-
-    navButtons.forEach(btn => {
-        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
-            btn.classList.add('active');
-        }
+    navButtons.forEach(function(btn) {
+        btn.classList.remove('active');
     });
+
+    const currentBtnId = 'nav-btn-' + tabId.replace('tab-', '');
+    const activeBtn = document.getElementById(currentBtnId);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+};
+
+window.changeCurrency = function(currencyCode) {
+    if (window.gameState.currencyRates[currencyCode]) {
+        window.gameState.selectedCurrency = currencyCode;
+        
+        const selectorButtons = document.querySelectorAll('.selector-btn');
+        selectorButtons.forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        
+        const activeSelectorBtn = document.getElementById('curr-btn-' + currencyCode);
+        if (activeSelectorBtn) {
+            activeSelectorBtn.classList.add('active');
+        }
+
+        window.updateUI();
+    }
+};
+
+window.playCasino = function(betAmount) {
+    const statusEl = document.getElementById('casino-result');
+    
+    if (window.gameState.balance < betAmount) {
+        if (statusEl) statusEl.innerText = "Недостаточно средств!";
+        return;
+    }
+
+    window.gameState.balance -= betAmount;
+    const isWin = Math.random() > 0.5;
+    
+    if (isWin) {
+        const winAmount = betAmount * 2;
+        window.gameState.balance += winAmount;
+        if (statusEl) {
+            statusEl.innerText = "Победа! +" + winAmount + " USD";
+            statusEl.style.color = "#00ff88";
+        }
+    } else {
+        if (statusEl) {
+            statusEl.innerText = "Проигрыш! -" + betAmount + " USD";
+            statusEl.style.color = "#ff5500";
+        }
+    }
+    window.updateUI();
+    window.saveGame();
+};
+
+window.tradeCrypto = function(action) {
+    const tradeVolume = 0.01;
+    const costInUSD = window.gameState.cryptoPrice * tradeVolume;
+    const statusEl = document.getElementById('exchange-status');
+
+    if (action === 'buy') {
+        if (window.gameState.balance >= costInUSD) {
+            window.gameState.balance -= costInUSD;
+            window.gameState.cryptoBalance += tradeVolume;
+            if (statusEl) statusEl.innerText = "Куплено " + tradeVolume + " BTC";
+        } else {
+            if (statusEl) statusEl.innerText = "Недостаточно USD!";
+        }
+    } else if (action === 'sell') {
+        if (window.gameState.cryptoBalance >= tradeVolume) {
+            window.gameState.cryptoBalance -= tradeVolume;
+            window.gameState.balance += costInUSD;
+            if (statusEl) statusEl.innerText = "Продано " + tradeVolume + " BTC";
+        } else {
+            if (statusEl) statusEl.innerText = "Недостаточно BTC на балансе!";
+        }
+    }
+    window.updateUI();
+    window.saveGame();
+};
+
+window.startLaborShift = function() {
+    const clickPower = window.calculateClickPower();
+    window.gameState.balance += clickPower;
+    
+    const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
+    const displayText = "+" + (clickPower * rate).toFixed(1) + " " + window.gameState.selectedCurrency;
+    window.createFloatingText(displayText);
+    
+    window.updateUI();
 };
 
 window.copyInviteLink = function() {
-    const link = `https://t.me{window.gameState.totalEarned}`;
-    navigator.clipboard.writeText(link).then(() => {
-        alert("Реферальная ссылка скопирована!");
-    }).catch(() => {
-        alert("Ошибка копирования ссылки.");
+    const myBot = "AvtykClicker_bot";
+    const myApp = "game";
+    const myId  = "647232";
+    
+    const inviteUrl = "https://t.me/" + myBot + "/" + myApp + "?startapp=" + myId;
+    
+    navigator.clipboard.writeText(inviteUrl).then(function() {
+        alert("Ссылка скопирована: " + inviteUrl);
+    }).catch(function() {
+        alert("Ошибка копирования. Ссылка: " + inviteUrl);
     });
 };
 
-// Автосохранение
-setInterval(() => {
-    localStorage.setItem('mafia_clicker_save', JSON.stringify(window.gameState));
-}, 5000);
-
-window.loadGame = function() {
-    const save = localStorage.getItem('mafia_clicker_save');
-    if (save) {
-        try {
-            const parsed = JSON.parse(save);
-            window.gameState = { ...window.gameState, ...parsed };
-            if (parsed.upgrades) {
-                window.gameState.upgrades = { ...window.gameState.upgrades, ...parsed.upgrades };
-            }
-        } catch (e) {
-            console.error("Ошибка чтения сохранения", e);
-        }
+// ==========================================
+// 5. СОХРАНЕНИЕ И ЗАГРУЗКА (SAVE SYSTEM)
+// ==========================================
+window.saveGame = function() {
+    const savedUpgrades = {};
+    for (let id in window.upgrades) {
+        savedUpgrades[id] = window.upgrades[id].level;
     }
-    window.switchTab('tab-market');
+
+    const saveObject = {
+        balance: window.gameState.balance,
+        cryptoBalance: window.gameState.cryptoBalance,
+        upgrades: savedUpgrades
+    };
+    localStorage.setItem('cryptoTycoonGame', JSON.stringify(saveObject));
 };
 
+window.loadGame = function() {
+    const savedGame = localStorage.getItem('cryptoTycoonGame');
+    if (savedGame) {
+        const parsedData = JSON.parse(savedGame);
+        
+        if (parsedData.balance !== undefined) window.gameState.balance = parsedData.balance;
+        if (parsedData.cryptoBalance !== undefined) window.gameState.cryptoBalance = parsedData.cryptoBalance;
+        
+        if (parsedData.upgrades) {
+            for (let id in window.upgrades) {
+                if (parsedData.upgrades[id] !== undefined) {
+                    window.upgrades[id].level = parsedData.upgrades[id];
+                }
+            }
+        }
+    }
+};
+
+// ==========================================
+// 6. ЕДИНАЯ ТОЧКА ИНИЦИАЛИЗАЦИИ И ЦИКЛЫ
+// ==========================================
+window.onload = function() {
+    window.loadGame();
+    window.updateUI();
+
+    setInterval(function() {
+        const passiveIncome = window.calculatePassiveIncome();
+        if (passiveIncome > 0) {
+            window.gameState.balance += passiveIncome;
+        }
+        
+        const priceChangePercent = (Math.random() * 5 - 2.5) / 100;
+        window.gameState.cryptoPrice += window.gameState.cryptoPrice * priceChangePercent;
+        if (window.gameState.cryptoPrice < 5000) {
+            window.gameState.cryptoPrice = 5000;
+        }
+
+        window.updateUI();
+    }, 1000);
+
+    setInterval(window.saveGame, 10000);
+};

@@ -63,6 +63,36 @@ window.getCurrentLeague = function() {
     return { name: "Лига Иллюминатов 👑", id: "elite" };
 };
 
+window.getCurrentLeagueRank = function() {
+    const e = window.gameState.totalEarned || 0;
+    
+    if (e <= 5000) {
+        // Бронза: места от 10 000 до 1 001
+        return Math.floor(10000 - (e / 5000) * 8999);
+    }
+    if (e <= 100000) {
+        // Серебро: места от 1 000 до 251
+        const progress = (e - 5001) / (100000 - 5001);
+        return Math.floor(1000 - progress * 749);
+    }
+    if (e <= 2000000) {
+        // Золото: места от 250 до 101
+        const progress = (e - 100001) / (2000000 - 100001);
+        return Math.floor(250 - progress * 149);
+    }
+    if (e <= 50000000) {
+        // Платина: места от 100 до 11
+        const progress = (e - 2000001) / (50000000 - 2000001);
+        return Math.floor(100 - progress * 89);
+    }
+    if (e <= 500000000) {
+        // Лига Иллюминатов: места от 10 до 2
+        const progress = (e - 50000001) / (500000000 - 50000001);
+        return Math.floor(10 - progress * 8);
+    }
+    return 1; // Абсолютный Топ-1!
+};
+
 window.updateUI = function() {
     const rate = window.gameState.currencyRates[window.gameState.selectedCurrency];
     const convertedBalance = (window.gameState.balance * rate).toFixed(2);
@@ -113,7 +143,20 @@ window.updateUI = function() {
     if (leagueEl) {
         leagueEl.innerText = window.getCurrentLeague().name;
     }
+
+    // ДОБАВЛЕНО: Обновление данных внутри новой вкладки ТОП
+    const leadLeagueEl = document.getElementById('leaderboard-user-league');
+    if (leadLeagueEl) {
+        leadLeagueEl.innerText = window.getCurrentLeague().name;
+    }
+
+    const leadRankEl = document.getElementById('leaderboard-user-rank');
+    if (leadRankEl) {
+        const rank = window.getCurrentLeagueRank();
+        leadRankEl.innerText = "#" + rank.toLocaleString();
+    }
 };
+
 
 
 window.buyUpgrade = function(upgradeId) {

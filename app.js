@@ -43,7 +43,7 @@ const UPGRADE_CONFIG = {
 };
 
 // ==========================================
-// 2. СИСТЕМА ЛИГ И РЕЙТИНГА (Защита от undefined)
+// 2. СИСТЕМА ЛИГ И РЕЙТИНГА
 // ==========================================
 window.getCurrentLeague = function() {
     let currentLeague = LEAGUES[0].name;
@@ -219,20 +219,29 @@ window.playCasino = function(betUSD) {
 };
 
 // ==========================================
-// 6. НАВИГАЦИЯ (ИСПРАВЛЕНО: Прямое управление отображением style.display)
+// 6. НАВИГАЦИЯ (Переключение классов .active строго по CSS-селекторам)
 // ==========================================
 window.switchTab = function(tabId) {
+    // 1. Скрываем все вкладки убирая класс active
     const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => {
-        tab.style.display = 'none';
-        tab.classList.remove('active');
-    });
+    tabs.forEach(tab => tab.classList.remove('active'));
     
+    // 2. Показываем нужную вкладку добавляя класс active
     const activeTab = document.getElementById(tabId);
     if (activeTab) {
-        activeTab.style.display = 'block';
         activeTab.classList.add('active');
     }
+
+    // 3. Переключаем активную кнопку в меню навигации
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+
+    // Ищем кнопку, у которой в onclick прописан нужный tabId
+    navButtons.forEach(btn => {
+        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+            btn.classList.add('active');
+        }
+    });
 };
 
 window.copyInviteLink = function() {
@@ -254,16 +263,3 @@ window.loadGame = function() {
     if (save) {
         try {
             const parsed = JSON.parse(save);
-            window.gameState = { ...window.gameState, ...parsed };
-            if (parsed.upgrades) {
-                window.gameState.upgrades = { ...window.gameState.upgrades, ...parsed.upgrades };
-            }
-        } catch (e) {
-            console.error("Ошибка чтения сохранения", e);
-        }
-    }
-    // Восстанавливаем дефолтную вкладку принудительно через style.display
-    window.switchTab('tab-market');
-};
-
-// Инициализация игры

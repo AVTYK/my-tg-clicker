@@ -325,6 +325,8 @@ window.onload = function() {
         const passiveIncome = window.calculatePassiveIncome();
         if (passiveIncome > 0) {
             window.gameState.balance += passiveIncome;
+            window.gameState.totalEarned += passiveIncome;
+
         }
         
         const priceChangePercent = (Math.random() * 5 - 2.5) / 100;

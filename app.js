@@ -437,22 +437,41 @@ window.switchTab = function(tabId) {
     }
 };
 
-// Функция, которая безопасно достает имя пользователя из Telegram API
+// ОБНОВЛЕННАЯ НАДЕЖНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ ИМЕНИ ДЛЯ ВСЕХ ВЕРСИЙ TELEGRAM
 window.getTelegramUserName = function() {
-    // Проверяем, запущено ли приложение внутри Telegram
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-        const user = window.Telegram.WebApp.initDataUnsafe.user;
+    // Сообщаем Telegram, что приложение полностью загружено и готово к работе
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
         
-        // Пробуем взять юзернейм (@username), если его нет — имя и фамилию
-        if (user.username) {
-            return "@" + user.username;
-        } else if (user.first_name) {
-            return user.first_name + (user.last_name ? " " + user.last_name : "");
+        // Извлекаем объект пользователя из безопасных данных инициализации
+        const initData = window.Telegram.WebApp.initDataUnsafe;
+        if (initData && initData.user) {
+            const user = initData.user;
+            
+            // Если есть @username, возвращаем его
+            if (user.username) {
+                return "@" + user.username;
+            } 
+            // Иначе собираем имя и фамилию
+            if (user.first_name) {
+                return user.first_name + (user.last_name ? " " + user.last_name : "");
+            }
         }
     }
-    // Если игра открыта просто в браузере через Live Server, вернем стандартное имя
+    // Заглушка, если игра запущена вне Telegram (в обычном браузере)
     return "Игрок (Браузер)";
 };
+
+// Автоматический вызов при полной загрузке скрипта, чтобы компьютерный ТГ успел передать данные
+window.addEventListener('DOMContentLoaded', function() {
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        // Принудительно обновляем экраны Топа и Кланов, когда Telegram передал данные
+        if (typeof window.renderTopPlayers === 'function') window.renderTopPlayers();
+        if (typeof window.updateClansUI === 'function') window.updateClansUI();
+    }
+});
+
 
 // НАДЕЖНАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ СОЗДАНИЯ КЛАНА (БЕЗ ВНЕШНИХ ЗАВИСИМОСТЕЙ)
 window.createClan = function(clanName) {

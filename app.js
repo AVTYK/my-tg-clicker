@@ -5,7 +5,7 @@ const firebaseConfig = {
   authDomain: "://firebaseapp.com",
   
   // ВПИСАНО: Точный адрес вашей базы данных для сохранения монет и прогресса
-  databaseURL: "https://firebaseio.com",
+  databaseURL: "https://console.firebase.google.com/project/crypto-tycoon-clicker/database/crypto-tycoon-clicker-default-rtdb/data/~2F",
   
   projectId: "crypto-tycoon-clicker",
   storageBucket: "crypto-tycoon-clicker.firebasestorage.app",

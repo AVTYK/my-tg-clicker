@@ -1,3 +1,23 @@
+// Настройки подключения игры к серверам Google Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBSRJKbCevSfdsJK3UGl-53BJEc18L7gcI",
+  authDomain: "://firebaseapp.com",
+  // Это та самая ссылка, которую вы сейчас видите посередине экрана Firebase:
+  databaseURL: "https://firebasedatabase.app",
+  projectId: "crypto-tycoon-clicker",
+  storageBucket: "crypto-tycoon-clicker.firebasestorage.app",
+  messagingSenderId: "376955245933",
+  appId: "1:376955245933:web:a25bf1e99f820098f13664",
+  measurementId: "G-BXL01QLKVL"
+};
+
+// Запускаем Firebase внутри нашей игры
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const database = firebase.database();
+
+
 // ==========================================
 // 1. СОСТОЯНИЕ ИГРЫ (STATE)
 // ==========================================
@@ -471,6 +491,27 @@ window.getTelegramUserData = function() {
     };
 };
 
+// Функция, которая дублирует очки и имя игрока в глобальное облако Google Firebase
+window.saveUserToGlobalTop = function() {
+    // 1. Берем данные Telegram (имя, аватарку, ID)
+    const currentUser = window.getTelegramUserData();
+    
+    // Если игра запущена не в ТГ и ID нет, то в общий топ не сохраняем
+    if (!currentUser || !currentUser.id) return;
+
+    // 2. Получаем текущие очки игрока. 
+    // ВНИМАНИЕ: Замените 'window.userScore' на ВАШУ переменную очков (например, баланс USD или BTC)
+    const currentScore = window.userScore || 0; 
+
+    // 3. Отправляем данные в Firebase. Папка в облаке создается автоматически по ID игрока
+    database.ref('users/' + currentUser.id).set({
+        name: currentUser.name,
+        avatar: currentUser.avatar,
+        score: currentScore,
+        lastUpdated: Date.now() // Запоминаем время последнего клика
+    });
+};
+
 
 // Автоматический вызов при полной загрузке скрипта, чтобы компьютерный ТГ успел передать данные
 window.addEventListener('DOMContentLoaded', function() {
@@ -745,6 +786,70 @@ setInterval(function() {
             : '$' + window.gameState.cryptoPrice.toLocaleString();
     }
 }, 3000); // Интервал ровно 3000 миллисекунд (3 секунды)
+
+
+window.renderLeaderboard = function() {
+    // 1. Находим контейнер списка в вашем HTML. 
+    // Если у вас другой ID (например, 'top-list'), замените 'leaderboard-list' на него.
+    const listContainer = document.getElementById("leaderboard-list");
+    if (!listContainer) return;
+
+    // Пока данные качаются из интернета, пишем заглушку
+    listContainer.innerHTML = "<div style='color: #aaa; text-align: center; padding: 20px;'>Загрузка таблицы лидеров...</div>";
+
+    // Получаем ID текущего игрока из Telegram, чтобы подсветить себя в списке
+    const currentUserId = window.getTelegramUserData()?.id;
+
+    // 2. Делаем запрос к нашей папке "users" в облаке Firebase
+    database.ref('users').once('value').then((snapshot) => {
+        const usersData = snapshot.val();
+        
+        // Если в базе вообще еще никого нет (вы первый игрок)
+        if (!usersData) {
+            listContainer.innerHTML = "<div style='color: #aaa; text-align: center; padding: 20px;'>Вы будете первым в топе!</div>";
+            return;
+        }
+
+        // Переводим объект из Firebase в удобный массив для JavaScript
+        const leaderboardArray = [];
+        Object.keys(usersData).forEach((id) => {
+            leaderboardArray.push({
+                id: id,
+                name: usersData[id].name,
+                avatar: usersData[id].avatar,
+                score: usersData[id].score
+            });
+        });
+
+        // 3. СОРТИРОВКА: у кого больше очков — тот выше в списке
+        leaderboardArray.sort((a, b) => b.score - a.score);
+
+        // Очищаем текст «Загрузка...» перед выводом реальных строк
+        listContainer.innerHTML = "";
+
+        // 4. ОТРИСОВКА: выводим игроков (ограничим до ТОП-50, чтобы экран не лагал)
+        leaderboardArray.slice(0, 50).forEach((player, index) => {
+            const row = document.createElement("div");
+            
+            // Если ID совпадает с ID того, кто открыл игру — добавляем класс 'highlight'
+            const isMe = (player.id == currentUserId);
+            row.className = `leaderboard-item ${isMe ? 'highlight' : ''}`;
+            
+            // Наполняем строку: Место | Аватарка | Имя | Очки
+            row.innerHTML = `
+                <span class="place">#${index + 1}</span>
+                <img src="${player.avatar}" class="avatar" alt="avatar" onerror="this.src='assets/default-avatar.png'">
+                <span class="name">${player.name} ${isMe ? '(Вы)' : ''}</span>
+                <span class="score">${player.score.toLocaleString()}</span>
+            `;
+            
+            listContainer.appendChild(row);
+        });
+    }).catch((error) => {
+        console.error("Ошибка загрузки ТОПа: ", error);
+        listContainer.innerHTML = "<div style='color: #ff6b6b; text-align: center;'>Не удалось загрузить ТОП :(</div>";
+    });
+};
 
 
 

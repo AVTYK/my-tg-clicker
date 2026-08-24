@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tycoon & Labor Market</title>
-    <!-- ИСПРАВЛЕНО: Подключили API Telegram Web Apps -->
+    
+    <!-- ИСПРАВЛЕНО: Теперь скрипт Telegram подключен правильно! -->
     <script src="https://telegram.org"></script>
-    <!-- ИСПРАВЛЕНО: Прямое подключение стилей без папки css -->
+
+    <!-- ШАГ 1: Подключили библиотеки базы данных Firebase от Google -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+
+    <!-- Прямое подключение стилей без папки css -->
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="game-container">
 
@@ -280,7 +287,7 @@
             <button id="nav-btn-crypto" class="nav-btn" onclick="window.switchTab('tab-crypto')">Трейдинг</button>
             <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
             <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
-            <button id="nav-btn-top" class="nav-btn" onclick="window.switchTab('tab-top')">Топ</button>
+            <button id="nav-btn-top" class="nav-btn" onclick="window.switchTab('tab-top'); window.renderLeaderboard();">Топ</button>
             <button id="nav-btn-clans" class="nav-btn" onclick="window.switchTab('tab-clans')">Кланы</button>
 
         </nav>

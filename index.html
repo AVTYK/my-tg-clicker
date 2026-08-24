@@ -4,19 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tycoon & Labor Market</title>
-    
-    <!-- ИСПРАВЛЕНО: Указан точный путь к официальному скрипту Telegram WebApp -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- ИСПРАВЛЕНО: Указаны точные ссылки на файлы библиотек Firebase -->
-    <script src="https://console.firebase.google.com/project/crypto-tycoon-clicker/database/crypto-tycoon-clicker-default-rtdb/data/~2F"></script>
-    <script src="https://console.firebase.google.com/project/crypto-tycoon-clicker/database/crypto-tycoon-clicker-default-rtdb/data/~2F"></script>
-
-    <!-- Прямое подключение стилей без папки css -->
+    <!-- ИСПРАВЛЕНО: Подключили API Telegram Web Apps -->
+    <script src="https://telegram.org"></script>
+    <!-- ИСПРАВЛЕНО: Прямое подключение стилей без папки css -->
     <link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
     <div class="game-container">
 
@@ -288,7 +280,7 @@
             <button id="nav-btn-crypto" class="nav-btn" onclick="window.switchTab('tab-crypto')">Трейдинг</button>
             <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
             <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
-            <button id="nav-btn-top" class="nav-btn" onclick="window.switchTab('tab-top'); window.renderLeaderboard();">Топ</button>
+            <button id="nav-btn-top" class="nav-btn" onclick="window.switchTab('tab-top')">Топ</button>
             <button id="nav-btn-clans" class="nav-btn" onclick="window.switchTab('tab-clans')">Кланы</button>
 
         </nav>

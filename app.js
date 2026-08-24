@@ -284,12 +284,14 @@ window.saveGame = function() {
     const saveObject = {
         balance: window.gameState.balance,
         cryptoBalance: window.gameState.cryptoBalance,
+        // ВСТАВЛЕНО: Сохраняем текущую плавающую цену Биткоина
+        cryptoPrice: window.gameState.cryptoPrice,
         upgrades: savedUpgrades,
-        // ВСТАВЛЕНО: Сохраняем состояние клана в общий сейв
         clanState: window.clanState
     };
     localStorage.setItem('cryptoTycoonGame', JSON.stringify(saveObject));
 };
+
 
 
 window.loadGame = function() {
@@ -300,6 +302,13 @@ window.loadGame = function() {
         if (parsedData.balance !== undefined) window.gameState.balance = parsedData.balance;
         if (parsedData.cryptoBalance !== undefined) window.gameState.cryptoBalance = parsedData.cryptoBalance;
         
+        // ВСТАВЛЕНО: Восстанавливаем сохраненную цену Биткоина из памяти
+        if (parsedData.cryptoPrice !== undefined) {
+            window.gameState.cryptoPrice = parsedData.cryptoPrice;
+        } else {
+            window.gameState.cryptoPrice = 50000; // Безопасная цена по умолчанию
+        }
+        
         if (parsedData.upgrades) {
             for (let id in window.upgrades) {
                 if (parsedData.upgrades[id] !== undefined) {
@@ -308,12 +317,12 @@ window.loadGame = function() {
             }
         }
 
-        // ВСТАВЛЕНО: Восстанавливаем состояние клана из сохранения
         if (parsedData.clanState) {
             window.clanState = parsedData.clanState;
         }
     }
 };
+
 
 
 // ==========================================

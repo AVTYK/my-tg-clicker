@@ -437,30 +437,40 @@ window.switchTab = function(tabId) {
     }
 };
 
-// ОБНОВЛЕННАЯ НАДЕЖНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ ИМЕНИ ДЛЯ ВСЕХ ВЕРСИЙ TELEGRAM
-window.getTelegramUserName = function() {
-    // Сообщаем Telegram, что приложение полностью загружено и готово к работе
+// Функция, которая достает данные пользователя напрямую из Telegram API
+window.getTelegramUserData = function() {
+    // Инициализируем WebApp и сообщаем Telegram, что приложение готово
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.ready();
-        
-        // Извлекаем объект пользователя из безопасных данных инициализации
-        const initData = window.Telegram.WebApp.initDataUnsafe;
-        if (initData && initData.user) {
-            const user = initData.user;
-            
-            // Если есть @username, возвращаем его
-            if (user.username) {
-                return "@" + user.username;
-            } 
-            // Иначе собираем имя и фамилию
-            if (user.first_name) {
-                return user.first_name + (user.last_name ? " " + user.last_name : "");
-            }
-        }
     }
-    // Заглушка, если игра запущена вне Telegram (в обычном браузере)
-    return "Игрок (Браузер)";
+
+    const webApp = window.Telegram?.WebApp;
+    const user = webApp?.initDataUnsafe?.user;
+
+    // Если данные пользователя успешно получены из Telegram
+    if (user) {
+        // Формируем имя (Имя + Фамилия), если их нет — берем @username
+        const displayName = user.first_name 
+            ? user.first_name + (user.last_name ? " " + user.last_name : "")
+            : (user.username ? "@" + user.username : "Игрок Telegram");
+
+        return {
+            id: user.id,
+            name: displayName,
+            username: user.username ? "@" + user.username : null,
+            avatar: user.photo_url || "assets/default-avatar.png" // Настоящая аватарка или заглушка, если фото скрыто
+        };
+    }
+
+    // Крайний случай: если Telegram не вернул пользователя (например, при сбое сети)
+    return {
+        id: null,
+        name: "Загрузка...",
+        username: null,
+        avatar: "assets/default-avatar.png"
+    };
 };
+
 
 // Автоматический вызов при полной загрузке скрипта, чтобы компьютерный ТГ успел передать данные
 window.addEventListener('DOMContentLoaded', function() {

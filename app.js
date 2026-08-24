@@ -323,20 +323,24 @@ window.onload = function() {
     window.loadGame();
     window.updateUI();
 
-    setInterval(function() {
-        const passiveIncome = window.calculatePassiveIncome();
-        if (passiveIncome > 0) {
-            window.gameState.balance += passiveIncome;
-        }
+    // ОБНОВЛЕННЫЙ ЦИКЛ НАЧИСЛЕНИЯ ПАССИВНОГО ДОХОДА С УЧЕТОМ КЛАНОВОГО БУСТА
+setInterval(function() {
+    let passiveIncome = window.calculatePassiveIncome();
+    if (passiveIncome > 0) {
+        // Умножаем базовый доход на скромный процент за лояльность клану
+        const clanBonus = (typeof window.getClanBonusMultiplier === 'function') 
+            ? window.getClanBonusMultiplier() 
+            : 1.0;
+            
+        passiveIncome = passiveIncome * clanBonus;
         
-        const priceChangePercent = (Math.random() * 5 - 2.5) / 100;
-        window.gameState.cryptoPrice += window.gameState.cryptoPrice * priceChangePercent;
-        if (window.gameState.cryptoPrice < 5000) {
-            window.gameState.cryptoPrice = 5000;
-        }
+        window.gameState.balance += passiveIncome;
+        
+        // Сразу обновляем интерфейс, чтобы прирост баланса был виден на экране
+        if (typeof window.updateUI === 'function') window.updateUI();
+    }
+}, 1000);
 
-        window.updateUI();
-    }, 1000);
 
     setInterval(window.saveGame, 10000);
 };
@@ -628,16 +632,46 @@ window.switchTab = function(tabId) {
     }
 };
 
-// Функция расчета текущего множителя прибыли от уровня клана
+// ОБНОВЛЕННАЯ ФУНКЦИЯ РАСЧЕТА КЛАНОВОГО БУСТА С ЛИМИТОМ ВРЕМЕНИ (4% и 2%)
 window.getClanBonusMultiplier = function() {
-    // Если объекта клана еще нет или игрок без клана, бонус равен x1.00
+    // Если игрок без клана, доход обычный (x1.00)
     if (!window.clanState || !window.clanState.hasClan) return 1.0;
     
-    const bonusPerLevel = 0.05; // +5% за каждый уровень
-    const currentLevel = window.clanState.level || 1;
+    // Если в памяти нет даты создания/вступления, записываем сегодняшнюю
+    if (!window.clanState.joinDate) {
+        window.clanState.joinDate = Date.now();
+    }
     
-    return 1.0 + (currentLevel * bonusPerLevel);
+    // Вычисляем, сколько миллисекунд игрок находится в клане
+    const timeDiff = Date.now() - window.clanState.joinDate;
+    
+    // Переводим миллисекунды в реальные календарные дни
+    // (Для тестов: можно временно заменить 86400000 на 60000, чтобы 1 день шел как 1 минута)
+    const daysInClan = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    
+    let totalBonus = 0;
+    
+    // Проверяем роль игрока: Создатель или обычный Участник
+    if (window.clanState.isOwner) {
+        // Настройки для Владельца: +1% старт, +0.1% в день, максимум +4%
+        const baseBonus = 0.01;
+        const dailyBonus = daysInClan * 0.001;
+        totalBonus = baseBonus + dailyBonus;
+        
+        if (totalBonus > 0.04) totalBonus = 0.04; // Жесткий лимит 4%
+    } else {
+        // Настройки для Участника: +0.5% старт, +0.05% в день, максимум +2%
+        const baseBonus = 0.005;
+        const dailyBonus = daysInClan * 0.0005;
+        totalBonus = baseBonus + dailyBonus;
+        
+        if (totalBonus > 0.02) totalBonus = 0.02; // Жесткий лимит 2%
+    }
+    
+    // Возвращаем итоговый множитель (например, 1.04 при максимальном бусте владельца)
+    return 1.0 + totalBonus;
 };
+
 
 
 

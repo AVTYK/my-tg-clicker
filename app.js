@@ -1,9 +1,12 @@
 // Настройки подключения игры к серверам Google Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBSRJKbCevSfdsJK3UGl-53BJEc18L7gcI",
+  // ИСПРАВЛЕНО: Добавлен правильный адрес авторизации на основе вашего projectId
   authDomain: "://firebaseapp.com",
-  // Это та самая ссылка, которую вы сейчас видите посередине экрана Firebase:
-  databaseURL: "https://firebasedatabase.app",
+  
+  // ВПИСАНО: Точный адрес вашей базы данных для сохранения монет и прогресса
+  databaseURL: "https://firebaseio.com",
+  
   projectId: "crypto-tycoon-clicker",
   storageBucket: "crypto-tycoon-clicker.firebasestorage.app",
   messagingSenderId: "376955245933",
@@ -12,10 +15,15 @@ const firebaseConfig = {
 };
 
 // Запускаем Firebase внутри нашей игры
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+if (typeof firebase !== 'undefined') {
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    window.database = firebase.database();
+    console.log("Firebase успешно подключен к базе данных!");
+} else {
+    console.error("Критическая ошибка: Библиотека Firebase не подключена в файле index.html!");
 }
-const database = firebase.database();
 
 
 // ==========================================

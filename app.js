@@ -716,3 +716,62 @@ setInterval(function() {
             : '$' + window.gameState.cryptoPrice.toLocaleString();
     }
 }, 3000); // Интервал ровно 3000 миллисекунд (3 секунды)
+
+// ==========================================
+// ЛОГИКА РАБОТЫ ШТОРКИ-МЕНЮ (БЕЗ ВИБРАЦИИ)
+// ==========================================
+
+// 1. Получаем ссылки на все нужные элементы со страницы
+const menuMainBtn = document.getElementById('menu-main-btn');
+const menuOverlay = document.getElementById('menu-overlay');
+const menuBottomSheet = document.getElementById('menu-bottom-sheet');
+const menuItems = document.querySelectorAll('.menu-item');
+
+// 2. Функция для ОТКРЫТИЯ меню
+function openNavigationMenu() {
+    // Включаем отображение элементов (убираем display: none)
+    menuOverlay.style.display = 'block';
+    menuBottomSheet.style.display = 'block';
+    
+    // Даем браузеру микропаузу, чтобы анимация CSS сработала корректно
+    setTimeout(() => {
+        menuOverlay.classList.add('active');
+        menuBottomSheet.classList.add('active');
+    }, 10);
+}
+
+// 3. Функция для ЗАКРЫТИЯ меню
+function closeNavigationMenu() {
+    // Убираем CSS классы активности (запускается плавная анимация закрытия)
+    menuOverlay.classList.remove('active');
+    menuBottomSheet.classList.remove('active');
+    
+    // Ждем 300мс (время окончания анимации в CSS) и полностью скрываем элементы
+    setTimeout(() => {
+        menuOverlay.style.display = 'none';
+        menuBottomSheet.style.display = 'none';
+    }, 300);
+}
+
+// 4. НАВЕШИВАЕМ СОБЫТИЯ (КЛИКИ)
+
+// Открытие при нажатии на главную кнопку «МЕНЮ»
+if (menuMainBtn) {
+    menuMainBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Защита от ложных срабатываний
+        openNavigationMenu();
+    });
+}
+
+// Закрытие при клике на ЛЮБОЕ ПУСТОЕ МЕСТО (оверлей/задник)
+if (menuOverlay) {
+    menuOverlay.addEventListener('click', closeNavigationMenu);
+}
+
+// Закрытие шторки при клике на любой ПУНКТ МЕНЮ
+menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+        closeNavigationMenu();
+    });
+});
+

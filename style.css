@@ -134,3 +134,133 @@ h2 { font-size: 0.95rem; color: #ffd700; text-transform: uppercase; letter-spaci
 }
 .nav-btn { flex: 1; background: none; border: none; color: #555565; font-size: 0.8rem; font-weight: 700; cursor: pointer; padding: 12px 2px; border-radius: 15px; text-align: center; white-space: nowrap; transition: all 0.2s; }
 .nav-btn.active { color: #fff; background: rgba(255, 255, 255, 0.08); }
+/* ========================================== */
+/* СТИЛИ ДЛЯ НОВОГО ШТОРКИ-МЕНЮ */
+/* ========================================== */
+
+/* 1. Стиль для новой главной кнопки МЕНЮ */
+.menu-trigger-button {
+    position: relative; /* Чтобы внутри правильно позиционировалась красная точка */
+    background-color: #2481cc; /* Стандартный синий цвет Telegram, можешь заменить на свой */
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%; /* Растягиваем кнопку на всю ширину таб-бара */
+    max-width: 200px; /* Ограничиваем максимальную ширину, чтобы кнопка аккуратно смотрелась по центру */
+    margin: 0 auto;
+    display: block;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 2. Общая красная точка-индикатор на главной кнопке */
+.notification-dot {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    background-color: #ff3b30; /* Насыщенный красный цвет Apple/Telegram */
+    border-radius: 50%;
+    border: 2px solid #000000; /* Черная обводка, чтобы точка выделялась */
+}
+
+/* 3. Графитовый оверлей (задник меню) — защита глаз */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(20, 20, 22, 0.65); /* Мягкий темный графит с прозрачностью */
+    backdrop-filter: blur(4px); /* Легкое размытие заднего плана для премиального вида */
+    z-index: 999; /* Поверх игры, но под шторкой */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Класс активации оверлея (будет добавляться через JS) */
+.menu-overlay.active {
+    opacity: 1;
+}
+
+/* 4. Сама темно-угольная выезжающая шторка */
+.menu-bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1c1c1e; /* Темно-угольный цвет, выделяющийся на черном фоне */
+    border-top-left-radius: 20px; /* Скругление верхних углов */
+    border-top-right-radius: 20px;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    z-index: 1000; /* Самый верхний слой */
+    transform: translateY(100%); /* По умолчанию спрятана внизу за экраном */
+    transition: transform 0.3s cubic-bezier(0.32, 0.94, 0.6, 1); /* Плавный выезд */
+    max-height: 70vh; /* Меню занимает максимум 70% высоты экрана */
+    overflow-y: auto; /* Если пунктов станет больше, появится прокрутка */
+}
+
+/* Класс активации шторки (будет добавляться через JS) */
+.menu-bottom-sheet.active {
+    transform: translateY(0); /* Выезжает вверх */
+}
+
+/* 5. Список пунктов меню */
+.menu-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* 6. Крупный, удобный для пальца пункт меню */
+.menu-item {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 16px 12px; /* Широкие отступы — большая зона клика */
+    cursor: pointer;
+    border-bottom: 1px solid #2c2c2e; /* Тонкая разделительная линия на 1 тон светлее */
+}
+
+/* Убираем нижнюю линию у последнего пункта */
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+/* Подсветка пункта при нажатии (эффект тапа) */
+.menu-item:active {
+    background-color: #2c2c2e;
+    border-radius: 8px;
+}
+
+/* Стиль иконок (эмодзи) в меню */
+.menu-icon {
+    font-size: 22px; /* Крупная заметная иконка */
+    margin-right: 16px; /* Отступ до текста */
+    display: flex;
+    align-items: center;
+}
+
+/* Крупный и мягкий для глаз шрифт текста */
+.menu-text {
+    color: #e5e5ea; /* Молочно-белый, не режет глаза в темноте */
+    font-size: 18px; /* Оптимальный крупный размер */
+    font-weight: 500;
+}
+
+/* Внутренняя красная точка для пунктов меню */
+.item-dot {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: #ff3b30;
+    border-radius: 50%;
+}

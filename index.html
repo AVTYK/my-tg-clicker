@@ -273,19 +273,70 @@
         </main>
 
 
-        <!-- ТАБ-БАР НАВИГАЦИИ -->
-        <nav class="nav-bar">
-            <button id="nav-btn-market" class="nav-btn active" onclick="window.switchTab('tab-market')">Биржа</button>
-            <button id="nav-btn-upgrades" class="nav-btn" onclick="window.switchTab('tab-upgrades')">Апгрейды</button>
-            <button id="nav-btn-crypto" class="nav-btn" onclick="window.switchTab('tab-crypto')">Трейдинг</button>
-            <button id="nav-btn-casino" class="nav-btn" onclick="window.switchTab('tab-casino')">Казино</button>
-            <button id="nav-btn-referrals" class="nav-btn" onclick="window.switchTab('tab-referrals')">Друзья</button>
-            <button id="nav-btn-top" class="nav-btn" onclick="window.switchTab('tab-top')">Топ</button>
-            <button id="nav-btn-clans" class="nav-btn" onclick="window.switchTab('tab-clans')">Кланы</button>
+<!-- ТАБ-БАР НАВИГАЦИИ -->
+<nav class="nav-bar">
+    <button id="menu-main-btn" class="menu-trigger-button">
+        МЕНЮ
+        <span id="menu-notification-dot" class="notification-dot" style="display: none;"></span>
+    </button>
+</nav>
 
-        </nav>
     </div>
 
+
+<!-- ========================================== -->
+<!-- НОВЫЙ БЛОК: ЗАДНИК И ШТОРКА МЕНЮ -->
+<!-- ========================================== -->
+<div id="menu-overlay" class="menu-overlay" style="display: none;"></div>
+
+<div id="menu-bottom-sheet" class="menu-bottom-sheet" style="display: none;">
+    <ul class="menu-items-list">
+        
+        <li class="menu-item" onclick="window.switchTab('tab-upgrades')">
+            <span class="menu-icon">🚀</span>
+            <span class="menu-text">Апгрейды</span>
+            <span class="item-dot" style="display: none;"></span>
+        </li>
+        
+        <li class="menu-item" onclick="window.switchTab('tab-market')">
+            <span class="menu-icon">🏛</span>
+            <span class="menu-text">Биржа</span>
+            <span class="item-dot" style="display: none;"></span>
+        </li>
+        
+        <li class="menu-item" onclick="window.switchTab('tab-crypto')">
+            <span class="menu-icon">📊</span>
+            <span class="menu-text">Трейдинг</span>
+            <span class="item-dot" style="display: none;"></span>
+        </li>
+        
+        <li class="menu-item" onclick="window.switchTab('tab-casino')">
+            <span class="menu-icon">🎰</span>
+            <span class="menu-text">Казино</span>
+            <span class="item-dot" style="display: none;"></span>
+        </li>
+        
+        <li class="menu-item" onclick="window.switchTab('tab-referrals')">
+            <span class="menu-icon">👥</span>
+            <span class="menu-text">Друзья</span>
+            <span class="item-dot" style="display: none;"></span>
+        </li>
+        
+        <li class="menu-item" onclick="window.switchTab('tab-top')">
+            <span class="menu-icon">🏆</span>
+            <span class="menu-text">Топ</span>
+            <span class="item-dot" style="display: none;"></span>
+        </li>
+        
+        <li class="menu-item" onclick="window.switchTab('tab-clans')">
+            <span class="menu-icon">🛡</span>
+            <span class="menu-text">Кланы</span>
+            <span class="item-dot" style="display: none;"></span>
+        </li>
+        
+    </ul>
+</div>
+<!-- ========================================== -->
 
     <!-- ИСПРАВЛЕНО: Прямое подключение скрипта без папки js -->
     <script src="app.js"></script>

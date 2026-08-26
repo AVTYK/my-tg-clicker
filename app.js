@@ -763,41 +763,53 @@ window.getClanBonusMultiplier = function() {
     return 1.0 + totalBonus;
 };
 
-// ЖИВОЙ ТАЙМЕР ДЛЯ КРИПТОБИРЖИ (ОБНОВЛЕНИЕ РАЗ В 3 СЕКУНДЫ)
-setInterval(function() {
-    // 1. Проверяем, задана ли стартовая цена в игре. Если нет — ставим $50,000
-    if (!window.gameState) window.gameState = {};
-    if (!window.gameState.cryptoPrice || window.gameState.cryptoPrice < 5000) {
-        window.gameState.cryptoPrice = 50000;
+// ========================================================
+// ДВИЖОК ЖИВОЙ ХАОТИЧНОЙ ЦЕНЫ БИТКОИНА (ОТ 5 000 ДО 500 000)
+// ========================================================
+
+// Устанавливаем стартовую цену ровно посередине при первом запуске
+if (!window.gameState.cryptoPrice || window.gameState.cryptoPrice === 50000) {
+    window.gameState.cryptoPrice = 250000; 
+}
+
+// Заводим скрытую переменную направления тренда (куда чаще идет рынок)
+let marketTrendDirection = Math.random() > 0.5 ? 1 : -1;
+// Каждые 30 секунд рынок меняет свое глобальное настроение (быки/медведи)
+setInterval(() => {
+    marketTrendDirection = Math.random() > 0.5 ? 1 : -1;
+}, 30000);
+
+/**
+ * Таймер живого изменения курса каждые 3 секунды
+ */
+setInterval(() => {
+    // 1. Задаем случайный размер шага (от 500 до 8000 долларов за один тик)
+    const priceStep = Math.floor(Math.random() * 7500) + 500;
+    
+    // 2. Определяем микро-направление (шанс 55% пойти по глобальному тренду)
+    const isUp = Math.random() < (marketTrendDirection > 0 ? 0.55 : 0.45);
+    
+    // 3. Считаем новую цену НАКОПИТЕЛЬНО (от предыдущего значения!)
+    let newPrice = window.gameState.cryptoPrice + (isUp ? priceStep : -priceStep);
+
+    // 4. ЖЕСТКИЕ ГРАНИЦЫ (ОТ 5 000 ДО 500 000) + эффект пружины
+    if (newPrice > 500000) {
+        newPrice = 500000;
+        marketTrendDirection = -1; // Силой разворачиваем рынок вниз
+    }
+    if (newPrice < 5000) {
+        newPrice = 5000;
+        marketTrendDirection = 1;  // Силой разворачиваем рынок вверх
     }
 
-    // 2. Генерируем случайный скачок цены в диапазоне от -2.5% до +2.5%
-    // Math.random() * 0.05 дает число от 0 до 0.05, вычитаем 0.025 -> получаем от -0.025 до +0.025
-    const percentChange = (Math.random() * 0.05) - 0.025;
-    let newPrice = window.gameState.cryptoPrice * (1 + percentChange);
+    // Записываем получившийся хаотичный курс в состояние игры
+    window.gameState.cryptoPrice = newPrice;
 
-    // 3. Жестко удерживаем цену в вашем диапазоне: от $5,000 до $500,000
-    const minPrice = 5000;
-    const maxPrice = 500000;
-
-    if (newPrice < minPrice) {
-        newPrice = minPrice + (Math.random() * 500); // Разворачиваем цену вверх
-    } else if (newPrice > maxPrice) {
-        newPrice = maxPrice - (Math.random() * 5000); // Разворачиваем цену вниз
+    // Обновляем весь интерфейс (шапку, спот и т.д.)
+    if (typeof window.updateUI === 'function') {
+        window.updateUI();
     }
-
-    // Округляем до целого числа, чтобы цена выглядела красиво
-    window.gameState.cryptoPrice = Math.floor(newPrice);
-
-    // 4. Мгновенно выводим обновленный курс на экран в HTML
-    const rateEl = document.getElementById('live-rate');
-    if (rateEl) {
-        // Красиво форматируем число (например: $54,320)
-        rateEl.innerText = (typeof window.formatCurrency === 'function')
-            ? window.formatCurrency(window.gameState.cryptoPrice)
-            : '$' + window.gameState.cryptoPrice.toLocaleString();
-    }
-}, 3000); // Интервал ровно 3000 миллисекунд (3 секунды)
+}, 3000);
 
 // ==========================================
 // ЛОГИКА РАБОТЫ ШТОРКИ-МЕНЮ (БЕЗ ВИБРАЦИИ)

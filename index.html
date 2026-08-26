@@ -206,7 +206,21 @@
 
     <div class="ticker-card">
         <!-- Твой живой курс BTC/USD (Общий для обоих режимов) -->
-        <div id="live-rate">$500,000</div>
+        <div id="live-rate">$250,000</div>
+
+<script>
+    // Создаем мостик между JS-кодом хаоса и экраном
+    window.updateUI = function() {
+        const rateElement = document.getElementById('live-rate');
+        
+        // Проверяем, что цена в игре существует, и элемент на экране найден
+        if (rateElement && window.gameState && window.gameState.cryptoPrice) {
+            // Берем цену, округляем и разделяем тысячи пробелами
+            rateElement.innerText = '$' + Math.floor(window.gameState.cryptoPrice).toLocaleString('ru-RU');
+        }
+    };
+</script>
+
         <div class="ticker-sub">Текущий курс BTC/USD (Обновление каждые 3 секунды)</div>
         
         <!-- ======================================================== -->

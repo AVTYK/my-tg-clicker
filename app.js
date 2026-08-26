@@ -1347,3 +1347,265 @@ window.switchTradingSubTab = function(subTab) {
         }
     }
 };
+
+
+// ========================================================
+// ДВИЖОК ЖИВОГО ГРАФИКА И ИГРЫ «ВЫШЕ/НИЖЕ» (ФЬЮЧЕРСЫ)
+// ========================================================
+
+const futuresConfig = {
+    maxPoints: 30,     // Сколько точек графика одновременно помещается на холсте
+    tickInterval: 500  // Как часто обновляется график (раз в 0.5 сек для плавности)
+};
+
+window.futuresState = {
+    points: [],        // Исторические точки курса для отрисовки линии
+    isActive: false,   // Идет ли сейчас активная сделка
+    selectedDuration: 15, // Выбранное время раунда в секундах (по умолчанию 15)
+    timeLeft: 0,       // Оставшееся время таймера
+    betAmount: 0,      // Сумма текущей ставки
+    direction: null,   // Направление ставки ('up' или 'down')
+    startPrice: 0,     // Цена Биткоина в момент нажатия кнопки
+    timerId: null,
+    chartId: null
+};
+
+/**
+ * 1. Функция выбора времени сделки (управление подсветкой 5 кнопок)
+ */
+window.setFuturesTime = function(seconds, label) {
+    if (window.futuresState.isActive) return; // Нельзя менять время во время активной сделки
+
+    window.futuresState.selectedDuration = seconds;
+
+    // Сбрасываем стили у всех 5 кнопок времени на стандартные темные
+    const buttons = ['15s', '30s', '1m', '5m', '15m'];
+    buttons.forEach(btnLabel => {
+        const btn = document.getElementById(`time-btn-${btnLabel}`);
+        if (btn) {
+            btn.style.backgroundColor = '#1c1c1e';
+            btn.style.color = '#aeaea3';
+            btn.style.border = '1px solid #2c2c2e';
+        }
+    });
+
+    // Подсвечиваем активную кнопку ярким синим цветом Telegram
+    const activeBtn = document.getElementById(`time-btn-${label}`);
+    if (activeBtn) {
+        activeBtn.style.backgroundColor = '#2481cc';
+        activeBtn.style.color = '#ffffff';
+        activeBtn.style.border = 'none';
+    }
+};
+
+/**
+ * 2. Функция генерации точек графика и его постоянного обновления
+ */
+function startChartEngine() {
+    const canvas = document.getElementById('futures-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    window.resizeFuturesChart = function() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+    };
+    window.resizeFuturesChart();
+
+    // Заполняем график начальными случайными точками вокруг курса
+    let basePrice = window.gameState?.cryptoPrice || 500000;
+    for (let i = 0; i < futuresConfig.maxPoints; i++) {
+        basePrice += (Math.random() - 0.5) * 400;
+        window.futuresState.points.push(basePrice);
+    }
+
+    // Главный цикл отрисовки и симуляции тиков курса
+    window.futuresState.chartId = setInterval(() => {
+        const contentFutures = document.getElementById('trading-content-futures');
+        if (!contentFutures || contentFutures.style.display === 'none') return;
+
+        let currentPrice = window.gameState?.cryptoPrice || 500000;
+        currentPrice += (Math.random() - 0.5) * 350; 
+        
+        window.futuresState.points.push(currentPrice);
+        if (window.futuresState.points.length > futuresConfig.maxPoints) {
+            window.futuresState.points.shift();
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const points = window.futuresState.points;
+        const minPrice = Math.min(...points) - 100;
+        const maxPrice = Math.max(...points) + 100;
+        const priceRange = maxPrice - minPrice;
+
+        // Рисуем сетку
+        ctx.strokeStyle = '#2c2c2e';
+        ctx.lineWidth = 0.5;
+        for (let i = 1; i < 4; i++) {
+            const y = (canvas.height / 4) * i;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+
+        // Рисуем неоновую линию курса
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#2481cc';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#2481cc';
+
+        for (let i = 0; i < points.length; i++) {
+            const x = (canvas.width / (futuresConfig.maxPoints - 1)) * i;
+            const y = canvas.height - ((points[i] - minPrice) / priceRange) * canvas.height;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0; 
+
+        // Если есть активная сделка: Рисуем линию точки старта
+        if (window.futuresState.isActive) {
+            const startY = canvas.height - ((window.futuresState.startPrice - minPrice) / priceRange) * canvas.height;
+            ctx.strokeStyle = '#ffe066';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, startY);
+            ctx.lineTo(canvas.width, startY);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffe066';
+            ctx.font = '11px sans-serif';
+            ctx.fillText(`СТАРТ: $${window.futuresState.startPrice.toFixed(0)}`, 10, startY - 6);
+        }
+
+        // Рисуем точку текущей цены
+        const lastX = canvas.width;
+        const lastY = canvas.height - ((points[points.length - 1] - minPrice) / priceRange) * canvas.height;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(lastX - 4, lastY, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+    }, futuresConfig.tickInterval);
+}
+
+setTimeout(startChartEngine, 200);
+
+/**
+ * 3. ФУНКЦИЯ НАЖАТИЯ НА КНОПКИ ВЫШЕ / НИЖЕ
+ */
+window.startFuturesTrade = function(chosenDirection) {
+    const statusEl = document.getElementById('futures-status');
+    const timerEl = document.getElementById('futures-timer');
+    const betInput = document.getElementById('futures-bet-input');
+    const btnUp = document.getElementById('futures-up-btn');
+    const btnDown = document.getElementById('futures-down-btn');
+
+    if (window.futuresState.isActive) return;
+
+    const bet = parseInt(betInput?.value) || 0;
+    if (bet < 10) {
+        if (statusEl) statusEl.innerText = "Минимальная ставка — 10 $";
+        return;
+    }
+
+    if (window.gameState.balance < bet) {
+        if (statusEl) statusEl.innerText = "Недостаточно USD на балансе!";
+        return;
+    }
+
+    // Списываем ставку
+    window.gameState.balance -= bet;
+    window.updateUI();
+
+    window.futuresState.isActive = true;
+    window.futuresState.betAmount = bet;
+    window.futuresState.direction = chosenDirection;
+    window.futuresState.startPrice = window.futuresState.points[window.futuresState.points.length - 1];
+    
+    // Подхватываем то время в секундах, которое выбрал игрок кнопками!
+    window.futuresState.timeLeft = window.futuresState.selectedDuration;
+
+    // Блокируем весь интерфейс управления, включая кнопки времени
+    if (betInput) betInput.disabled = true;
+    if (btnUp) btnUp.disabled = true;
+    if (btnDown) btnDown.disabled = true;
+    
+    const buttons = ['15s', '30s', '1m', '5m', '15m'];
+    buttons.forEach(l => {
+        const b = document.getElementById(`time-btn-${l}`);
+        if (b) b.disabled = true;
+    });
+
+    if (timerEl) {
+        timerEl.innerText = formatTimeLabel(window.futuresState.timeLeft);
+        timerEl.style.display = 'block';
+    }
+    if (statusEl) {
+        statusEl.innerText = `Прогноз принят: ${chosenDirection === 'up' ? 'ВЫШЕ' : 'НИЖЕ'}. Ожидание финала...`;
+        statusEl.style.color = '#ffe066';
+    }
+
+    // Запускаем таймер
+    window.futuresState.timerId = setInterval(() => {
+        window.futuresState.timeLeft--;
+        
+        if (timerEl) timerEl.innerText = formatTimeLabel(window.futuresState.timeLeft);
+
+        if (window.futuresState.timeLeft <= 0) {
+            clearInterval(window.futuresState.timerId);
+            
+            const endPrice = window.futuresState.points[window.futuresState.points.length - 1];
+            const startPrice = window.futuresState.startPrice;
+            const direction = window.futuresState.direction;
+            
+            let isWin = false;
+
+            if (direction === 'up' && endPrice > startPrice) isWin = true;
+            else if (direction === 'down' && endPrice < startPrice) isWin = true;
+
+            if (isWin) {
+                const winAmount = window.futuresState.betAmount * 2;
+                window.gameState.balance += winAmount;
+                if (statusEl) {
+                    statusEl.innerText = `Победа! 🎉 ($${startPrice.toFixed(0)} -> $${endPrice.toFixed(0)}). +${winAmount} USD`;
+                    statusEl.style.color = '#00ff88';
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.innerText = `Проигрыш! 😔 ($${startPrice.toFixed(0)} -> $${endPrice.toFixed(0)}). -${window.futuresState.betAmount} USD`;
+                    statusEl.style.color = '#ff5500';
+                }
+            }
+
+            // Сбрасываем состояние и разблокируем всё обратно
+            window.futuresState.isActive = false;
+            if (timerEl) timerEl.style.display = 'none';
+            if (betInput) betInput.disabled = false;
+            if (btnUp) btnUp.disabled = false;
+            if (btnDown) btnDown.disabled = false;
+            
+            buttons.forEach(l => {
+                const b = document.getElementById(`time-btn-${l}`);
+                if (b) b.disabled = false;
+            });
+
+            window.updateUI();
+            if (typeof window.saveGame === 'function') window.saveGame();
+        }
+    }, 1000);
+};
+
+/**
+ * Вспомогательная функция красивого форматирования секунд в минуты:секунды
+ */
+function formatTimeLabel(totalSeconds) {
+    if (totalSeconds < 60) return `${totalSeconds}s`;
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+}

@@ -236,20 +236,29 @@
             </div>
         </div>
 
-        <!-- ======================================================== -->
-        <!-- ПОД-ВКЛАДКА Б: ФЬЮЧЕРСЫ (Новая игра Выше/Ниже с графиком) -->
+                <!-- ======================================================== -->
+        <!-- ПОД-ВКЛАДКА Б: ФЬЮЧЕРСЫ (С ВЫБОРОМ 5 ТАЙМЕРОВ) -->
         <!-- ======================================================== -->
         <div id="trading-content-futures" class="trading-sub-content" style="display: none; margin-top: 15px;">
             
             <!-- Живой линейный график (HTML5 Canvas) -->
-            <div class="chart-wrapper" style="position: relative; width: 100%; height: 150px; background-color: #121212; border: 1px solid #2c2c2e; border-radius: 12px; overflow: hidden; margin-bottom: 15px;">
+            <div class="chart-wrapper" style="position: relative; width: 100%; height: 150px; background-color: #121212; border: 1px solid #2c2c2e; border-radius: 12px; overflow: hidden; margin-bottom: 12px;">
                 <canvas id="futures-chart" style="width: 100%; height: 100%; display: block;"></canvas>
                 <!-- Визуальный таймер раунда поверх графика -->
-                <div id="futures-timer" style="position: absolute; top: 10px; right: 10px; background-color: rgba(0,0,0,0.6); color: #ffe066; padding: 4px 8px; border-radius: 6px; font-size: 14px; font-weight: bold; display: none;">15s</div>
+                <div id="futures-timer" style="position: absolute; top: 10px; right: 10px; background-color: rgba(0,0,0,0.75); color: #ffe066; padding: 4px 8px; border-radius: 6px; font-size: 14px; font-weight: bold; display: none;">15s</div>
+            </div>
+
+            <!-- НОВЫЙ БЛОК: ВЫБОР ВРЕМЕНИ СДЕЛКИ (5 ТАЙМЕРОВ) -->
+            <div class="futures-time-selector" style="display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;">
+                <button id="time-btn-15s" class="futures-time-btn" onclick="window.setFuturesTime(15, '15s')" style="background-color: #2481cc; color: #ffffff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer;">15s</button>
+                <button id="time-btn-30s" class="futures-time-btn" onclick="window.setFuturesTime(30, '30s')" style="background-color: #1c1c1e; color: #aeaea3; border: 1px solid #2c2c2e; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer;">30s</button>
+                <button id="time-btn-1m" class="futures-time-btn" onclick="window.setFuturesTime(60, '1m')" style="background-color: #1c1c1e; color: #aeaea3; border: 1px solid #2c2c2e; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer;">1m</button>
+                <button id="time-btn-5m" class="futures-time-btn" onclick="window.setFuturesTime(300, '5m')" style="background-color: #1c1c1e; color: #aeaea3; border: 1px solid #2c2c2e; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer;">5m</button>
+                <button id="time-btn-15m" class="futures-time-btn" onclick="window.setFuturesTime(900, '15m')" style="background-color: #1c1c1e; color: #aeaea3; border: 1px solid #2c2c2e; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer;">15m</button>
             </div>
 
             <!-- Выбор суммы ставки на раунд -->
-            <div class="futures-bet-container" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <div class="futures-bet-container" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <label for="futures-bet-input" style="color: #e5e5ea; font-size: 15px;">Ставка ($):</label>
                 <input 
                     type="number" 
@@ -266,8 +275,9 @@
                 <button class="action-btn sell" id="futures-down-btn" onclick="window.startFuturesTrade('down')" style="width: 100%;">🔴 НИЖЕ</button>
             </div>
             
-            <div id="futures-status" style="margin-top: 10px; font-size: 14px; color: #aeaea3;">Выберите направление и время</div>
+            <div id="futures-status" style="margin-top: 10px; font-size: 14px; color: #aeaea3;">Выберите время, ставку и направление</div>
         </div>
+
 
     </div>
 </section>

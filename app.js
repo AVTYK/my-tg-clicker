@@ -83,6 +83,9 @@ window.updateUI = function() {
         uiCpowerEl.innerText = (window.calculateClickPower() * rate).toFixed(2);
     }
 
+        // Заводим флажок: изначально считаем, что доступных апгрейдов нет
+    let canAffordAnyUpgrade = false;
+
     for (let id in window.upgrades) {
         const upgrade = window.upgrades[id];
         const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.priceMultiplier, upgrade.level));
@@ -96,8 +99,23 @@ window.updateUI = function() {
         if (priceEl) {
             priceEl.innerText = (currentPrice * rate).toFixed(0) + " " + window.gameState.selectedCurrency;
         }
+
+        // ==========================================
+        // НАША НОВАЯ ПРОВЕРКА БАЛАНСА
+        // ==========================================
+        // Если баланса игрока хватает на покупку ТЕКУЩЕГО перебираемого апгрейда
+        if (window.gameState.balance >= currentPrice) {
+            canAffordAnyUpgrade = true; // Фиксируем, что игроку хватает денег хотя бы на один апгрейд
+        }
+    }
+
+    // После того как цикл проверил все 10 апгрейдов:
+    if (canAffordAnyUpgrade) {
+        // Если денег хватает хотя бы на один доступный апгрейд — зажигаем красную точку!
+        window.toggleItemMenuDot('tab-upgrades', true);
     }
 };
+
 
 window.buyUpgrade = function(upgradeId) {
     const upgrade = window.upgrades[upgradeId];

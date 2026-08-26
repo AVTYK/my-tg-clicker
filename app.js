@@ -768,12 +768,24 @@ if (menuOverlay) {
     menuOverlay.addEventListener('click', closeNavigationMenu);
 }
 
-// Закрытие шторки при клике на любой ПУНКТ МЕНЮ
+// Закрытие шторки при клике на любой ПУНКТ МЕНЮ + очистка уведомления
 menuItems.forEach(item => {
     item.addEventListener('click', () => {
+        // 1. Узнаем, какую вкладку нажал игрок, достав её из атрибута onclick
+        const onclickAttr = item.getAttribute('onclick') || '';
+        const match = onclickAttr.match(/'([^']+)'/); // Вытаскиваем название таба, например 'tab-upgrades'
+        
+        if (match && match[1]) {
+            const clickedTabId = match[1];
+            // 2. Гасим красную точку для этой вкладки
+            toggleItemMenuDot(clickedTabId, false);
+        }
+        
+        // 3. Закрываем меню
         closeNavigationMenu();
     });
 });
+
 
 // ==========================================
 // УПРАВЛЕНИЕ ИНДИКАТОРАМИ (КРАСНЫМИ ТОЧКАМИ)

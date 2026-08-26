@@ -41,8 +41,17 @@
                 </div>
                 
                 <div class="click-area">
-                    <button id="click-btn" onclick="window.startLaborShift()">🪙</button>
-                </div>
+    <!-- Наша кнопка кликера теперь содержит красивую графическую монету внутри -->
+    <button id="click-btn" onclick="window.startLaborShift(event)">
+        <div class="coin-body">
+            <div class="coin-inner">
+                <!-- Сюда можно будет вписать символ валюты, пока оставим знак доллара/монеты -->
+                <span id="coin-symbol">$</span>
+            </div>
+        </div>
+    </button>
+</div>
+
             </section>
         </main>
 

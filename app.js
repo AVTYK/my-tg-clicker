@@ -874,3 +874,39 @@ function toggleItemMenuDot(tabId, show) {
     }
 }
 
+
+// ==========================================
+// 3D-ЭФФЕКТ НАКЛОНА МОНЕТЫ (TILT EFFECT)
+// ==========================================
+
+const clickBtn = document.getElementById('click-btn');
+
+if (clickBtn) {
+    // Слушаем нажатие (работает и на смартфонах, и на ПК)
+    clickBtn.addEventListener('pointerdown', (event) => {
+        // Получаем размеры монеты и её положение на экране
+        const rect = clickBtn.getBoundingClientRect();
+        
+        // Высчитываем координаты клика относительно центра монеты
+        const x = event.clientX - rect.left - rect.width / 2;
+        const y = event.clientY - rect.top - rect.height / 2;
+        
+        // Переводим координаты в градусы наклона (максимум 25 градусов)
+        const tiltX = -(y / (rect.height / 2)) * 25;
+        const tiltY = (x / (rect.width / 2)) * 25;
+        
+        // Применяем 3D-наклон и легкое сжатие (эффект физического вдавливания)
+        clickBtn.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(0.95)`;
+    });
+
+    // Слушаем отпускание пальца/мыши
+    clickBtn.addEventListener('pointerup', () => {
+        // Плавно возвращаем монету в исходное ровное состояние
+        clickBtn.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+    });
+
+    // На случай, если игрок увёл палец за пределы монеты, не отпуская его
+    clickBtn.addEventListener('pointerleave', () => {
+        clickBtn.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+    });
+}

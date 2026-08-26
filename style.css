@@ -275,3 +275,95 @@ h2 { font-size: 0.95rem; color: #ffd700; text-transform: uppercase; letter-spaci
     margin-left: 6px; /* Отступ слева, чтобы точка не слипалась с текстом цены */
     vertical-align: middle; /* Выравниваем точку ровно по центру текста цены */
 }
+
+/* ========================================== */
+/* СТИЛИ ДЛЯ ОБЪЕМНОЙ 3D МОНЕТЫ */
+/* ========================================== */
+
+/* Контейнер кликера — центрируем монету и даем глубину для 3D */
+.click-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 40px auto;
+    perspective: 1000px; /* Важно для объемного 3D-наклона */
+}
+
+/* Сама кнопка-кликер — убираем стандартные рамки */
+#click-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent; /* Убираем синюю вспышку при тапе на мобилках */
+    transform-style: preserve-3d; /* Разрешаем внутренним элементам быть трехмерными */
+    transition: transform 0.1s ease; /* Плавный возврат монеты в исходное состояние */
+}
+
+/* Внешнее тело монеты (основа и золотой градиент) */
+.coin-body {
+    width: 200px; /* Оптимальный крупный размер монеты */
+    height: 200px;
+    border-radius: 50%;
+    /* Дорогой золотой металлический градиент */
+    background: linear-gradient(135deg, #ffe066 0%, #f5b041 50%, #c0392b 100%);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Объемная тень снизу + мягкое пульсирующее золотое свечение вокруг */
+    box-shadow: 
+        0 15px 30px rgba(0, 0, 0, 0.7), 
+        0 0 30px rgba(245, 176, 65, 0.4); 
+    transition: box-shadow 0.3s ease;
+}
+
+/* Внутренний кантик монеты для создания эффекта чеканки */
+.coin-inner {
+    width: 176px;
+    height: 176px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f5b041 0%, #f39c12 100%);
+    border: 4px dashed #fcd116; /* Аккуратный чеканный ободок */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.4); /* Внутренняя тень объема */
+}
+
+/* Символ внутри монеты (крупный и контрастный) */
+#coin-symbol {
+    font-size: 70px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5); /* Тень для читаемости */
+    user-select: none; /* Запрещаем выделение текста при частых кликах */
+}
+
+/* Эффект легкого бегущего блика раз в несколько секунд */
+.coin-body::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(45deg);
+    transition: all 0.5s scale;
+    animation: coinShine 4s infinite linear;
+}
+
+/* Анимация бегущего блика */
+@keyframes coinShine {
+    0% { left: -150%; }
+    10% { left: 150%; }
+    100% { left: 150%; }
+}
+

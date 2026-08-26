@@ -652,3 +652,154 @@ h2 { font-size: 0.95rem; color: #ffd700; text-transform: uppercase; letter-spaci
     font-weight: 500;
     margin: 10px 0;
 }
+
+/* ========================================== */
+/* СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ЕЖЕДНЕВНЫХ НАГРАД */
+/* ========================================== */
+
+/* 1. Полноэкранный затемняющий оверлей с размытием заднего плана */
+.daily-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.75); /* Глубокое затемнение */
+    backdrop-filter: blur(8px); /* Сильное размытие игры сзади для фокуса на окне */
+    z-index: 2000; /* Выше шторки-меню и всех остальных элементов */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* 2. Сама центральная модальная карточка */
+.daily-modal-card {
+    background-color: #1c1c1e; /* Темно-угольный премиальный цвет */
+    border: 2px solid #2c2c2e;
+    border-radius: 24px;
+    padding: 24px 16px;
+    width: 100%;
+    max-width: 340px; /* Идеальный размер для экрана смартфона */
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    animation: modalAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Эффектный вылет */
+}
+
+/* Анимация плавного появления и легкого увеличения карточки */
+@keyframes modalAppear {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.daily-modal-card h2 {
+    color: #ffffff;
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 22px;
+}
+
+.daily-subtitle {
+    color: #8e8e93;
+    font-size: 13px;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+/* 3. СЕТКА ДЛЯ 7 ДНЕЙ (2 колонки) */
+.daily-days-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Распределяем по 2 дня в ряд */
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Общий стиль для стандартной плашки дня */
+.daily-day-item {
+    background-color: #2c2c2e; /* Чуть светлее карточки */
+    border: 1px solid #3a3a3c;
+    border-radius: 14px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.day-number {
+    font-size: 12px;
+    font-weight: bold;
+    color: #aeaea3;
+}
+
+.day-icon {
+    font-size: 20px;
+}
+
+.day-reward-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* Особый стиль для 7-го дня (занимает целую строчку внизу) */
+.daily-day-item.day-7-special {
+    grid-column: span 2; /* Растягиваем плашку на 2 колонки */
+    background: linear-gradient(135deg, #2c2c2e 0%, #1e1e1f 100%);
+    border: 1px solid #ffe066; /* Золотая рамочка */
+    box-shadow: 0 0 15px rgba(245, 176, 65, 0.2);
+}
+
+.daily-day-item.day-7-special .day-number {
+    color: #ffe066; /* Золотой текст дня */
+}
+
+/* 4. КЛАССЫ АКТИВНОСТИ И СОСТОЯНИЯ (Будут управляться через JS) */
+
+/* Стиль для ТЕКУЩЕГО дня, который доступен для сбора прямо сейчас */
+.daily-day-item.current-active {
+    border: 2px solid #2481cc; /* Яркая синяя рамка Telegram */
+    box-shadow: 0 0 10px rgba(36, 129, 204, 0.4);
+    transform: scale(1.02);
+}
+
+/* Стиль для УЖЕ ЗАБРАННЫХ дней (прошлое) */
+.daily-day-item.claimed-past {
+    background-color: rgba(39, 174, 96, 0.15); /* Прозрачно-зеленый фон */
+    border: 1px solid #27ae60;
+}
+.daily-day-item.claimed-past .day-number,
+.daily-day-item.claimed-past .day-reward-text {
+    color: #2ecc71; /* Зеленый текст */
+    text-decoration: line-through; /* Зачеркиваем, так как уже получено */
+}
+
+/* 5. ГЛАВНАЯ КНОПКА СБОРА НАГРАДЫ */
+.daily-claim-btn {
+    background: linear-gradient(135deg, #2481cc 0%, #1a6fa8 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 0;
+    font-size: 16px;
+    font-weight: bold;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(36, 129, 204, 0.3);
+    transition: transform 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.daily-claim-btn:active {
+    transform: scale(0.98);
+}
+
+.daily-claim-btn:disabled {
+    background: #48484a;
+    color: #aeaea3;
+    box-shadow: none;
+    cursor: not-allowed;
+}

@@ -397,6 +397,75 @@
         
     </ul>
 </div>
+
+<!-- ========================================== -->
+<!-- НОВЫЙ БЛОК: МОДАЛЬНОЕ ОКНО ЕЖЕДНЕВНОГО БОНУСА -->
+<!-- ========================================== -->
+
+<!-- Затемняющий оверлей для модального окна -->
+<div id="daily-reward-overlay" class="daily-overlay" style="display: none;">
+    
+    <!-- Сама карточка всплывающего окна -->
+    <div class="daily-modal-card">
+        <h2>Ежедневный Бонус</h2>
+        <p class="daily-subtitle">Заходи в игру каждый день без пропусков, чтобы забрать главный приз!</p>
+        
+        <!-- Сетка из 7 дней календаря -->
+        <div class="daily-days-grid">
+            
+            <div class="daily-day-item" id="daily-day-1">
+                <span class="day-number">День 1</span>
+                <span class="day-icon">💵</span>
+                <span class="day-reward-text">+100 $</span>
+            </div>
+            
+            <div class="daily-day-item" id="daily-day-2">
+                <span class="day-number">День 2</span>
+                <span class="day-icon">💵</span>
+                <span class="day-reward-text">+500 $</span>
+            </div>
+            
+            <div class="daily-day-item" id="daily-day-3">
+                <span class="day-number">День 3</span>
+                <span class="day-icon">💵</span>
+                <span class="day-reward-text">+1,500 $</span>
+            </div>
+            
+            <div class="daily-day-item" id="daily-day-4">
+                <span class="day-number">День 4</span>
+                <span class="day-icon">💵</span>
+                <span class="day-reward-text">+5,000 $</span>
+            </div>
+            
+            <div class="daily-day-item" id="daily-day-5">
+                <span class="day-number">День 5</span>
+                <span class="day-icon">💵</span>
+                <span class="day-reward-text">+20k $</span>
+            </div>
+            
+            <div class="daily-day-item" id="daily-day-6">
+                <span class="day-number">День 6</span>
+                <span class="day-icon">💵</span>
+                <span class="day-reward-text">+100k $</span>
+            </div>
+            
+            <!-- День 7 с твоей мега-наградой в 1 BTC! -->
+            <div class="daily-day-item day-7-special" id="daily-day-7">
+                <span class="day-number">День 7</span>
+                <span class="day-icon">🪙</span>
+                <span class="day-reward-text">+1 BTC</span>
+            </div>
+            
+        </div>
+        
+        <!-- Кнопка действия -->
+        <button id="daily-claim-btn" class="daily-claim-btn" onclick="window.claimDailyReward()">
+            ЗАБРАТЬ НАГРАДУ
+        </button>
+    </div>
+    
+</div>
+
 <!-- ========================================== -->
 
     <!-- ИСПРАВЛЕНО: Прямое подключение скрипта без папки js -->

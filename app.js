@@ -1099,3 +1099,157 @@ window.startRouletteSpin = function() {
         }, 4000); // 4000мс = 4 секунды кручения барабана
     }, 20);
 };
+
+// ==========================================
+// ЛОГИКА ЕЖЕДНЕВНЫХ НАГРАД (DAILY REWARDS)
+// ==========================================
+
+// 1. Хранилище данных бонуса (синхронизируется с localStorage)
+window.dailyRewardState = {
+    streak: 0,            // Текущий день бонуса (0 - еще ничего не брал, 1-7)
+    lastClaimTime: 0      // Таймстамп в миллисекундах, когда награда была взята в последний раз
+};
+
+// Массив наград для каждого из 7 дней
+const dailyRewardsConfig = [
+    { type: 'fiat', amount: 100 },     // День 1
+    { type: 'fiat', amount: 500 },     // День 2
+    { type: 'fiat', amount: 1500 },    // День 3
+    { type: 'fiat', amount: 5000 },    // День 4
+    { type: 'fiat', amount: 20000 },   // День 5
+    { type: 'fiat', amount: 100000 },  // День 6
+    { type: 'crypto', amount: 1.0 }    // День 7: НАШ КОРОЛЕВСКИЙ КУШ — 1 БИТКОИН!
+];
+
+/**
+ * 2. Функция проверки времени и инициализации окна бонусов
+ */
+window.checkDailyReward = function() {
+    // Подгружаем сохраненный прогресс из памяти, если он там есть
+    const savedDaily = localStorage.getItem('tg_clicker_daily');
+    if (savedDaily) {
+        window.dailyRewardState = JSON.parse(savedDaily);
+    }
+
+    const now = Date.now();
+    const msInDay = 24 * 60 * 60 * 1000; // Сколько миллисекунд в сутках
+
+    // Если игрок зашел в самый первый раз вообще
+    if (window.dailyRewardState.lastClaimTime === 0) {
+        window.dailyRewardState.streak = 1; // Готов забрать День 1
+        window.showDailyRewardModal();
+        return;
+    }
+
+    const timePassed = now - window.dailyRewardState.lastClaimTime;
+
+    // ПРОВЕРКА: Прошло ли больше 48 часов с последнего сбора?
+    if (timePassed >= (msInDay * 2)) {
+        // Прогресс сгорел! Сбрасываем на День 1
+        window.dailyRewardState.streak = 1;
+        window.saveDailyState();
+        window.showDailyRewardModal();
+        return;
+    }
+
+    // ПРОВЕРКА: Прошло ли больше 24 часов? (Наступил новый день для сбора)
+    if (timePassed >= msInDay) {
+        // Увеличиваем день серии. Если вчера забрал 7-й день, то серия завершена — сбрасываем на День 1
+        if (window.dailyRewardState.streak >= 7) {
+            window.dailyRewardState.streak = 1;
+        } else {
+            window.dailyRewardState.streak += 1; // Двигаемся на следующий день
+        }
+        window.saveDailyState();
+        window.showDailyRewardModal();
+        return;
+    }
+
+    // Если 24 часа еще не прошло — модальное окно просто НЕ открывается, игрок спокойно кликает монету
+    console.log("Ежедневный бонус еще не доступен. Ждите.");
+};
+
+/**
+ * 3. Функция визуального обновления плашек и открытия окна
+ */
+window.showDailyRewardModal = function() {
+    const overlay = document.getElementById('daily-reward-overlay');
+    const claimBtn = document.getElementById('daily-claim-btn');
+    if (!overlay) return;
+
+    const currentStreak = window.dailyRewardState.streak;
+
+    // Перебираем все 7 плашек дней в HTML и красим их согласно статусу
+    for (let d = 1; d <= 7; d++) {
+        const dayEl = document.getElementById(`daily-day-${d}`);
+        if (!dayEl) continue;
+
+        // Очищаем старые тестовые классы активности
+        dayEl.classList.remove('claimed-past', 'current-active');
+
+        if (d < currentStreak) {
+            // Этот день уже был забран в прошлом
+            dayEl.classList.add('claimed-past');
+        } else if (d === currentStreak) {
+            // Это текущий активный день, который доступен для сбора ПРЯМО СЕЙЧАС
+            dayEl.classList.add('current-active');
+        }
+        // Будущие дни (d > currentStreak) остаются стандартного темного цвета (заморожены)
+    }
+
+    // Активируем кнопку сбора и плавно показываем модалку
+    if (claimBtn) {
+        claimBtn.disabled = false;
+        claimBtn.innerText = `ЗАБРАТЬ НАГРАДУ (ДЕНЬ ${currentStreak})`;
+    }
+    overlay.style.display = 'flex';
+};
+
+/**
+ * 4. ГЛАВНАЯ ФУНКЦИЯ СБОРА НАГРАДЫ (Клик по кнопке «ЗАБРАТЬ»)
+ */
+window.claimDailyReward = function() {
+    const currentStreak = window.dailyRewardState.streak;
+    const reward = dailyRewardsConfig[currentStreak - 1]; // Получаем настройки награды для этого дня
+    const overlay = document.getElementById('daily-reward-overlay');
+
+    // Начисляем бонус на баланс игры в зависимости от типа награды
+    if (reward.type === 'fiat') {
+        window.gameState.balance += reward.amount; // Обычные доллары США
+    } else if (reward.type === 'crypto') {
+        window.gameState.cryptoBalance += reward.amount; // НАШ 1 BTC НА 7-Й ДЕНЬ!
+    }
+
+    // Фиксируем точное время сбора награды
+    window.dailyRewardState.lastClaimTime = Date.now();
+    window.saveDailyState();
+
+    // Запускаем твои родные системные функции обновления экрана и сохранения кликера
+    window.updateUI();
+    if (typeof window.saveGame === 'function') window.saveGame();
+
+    // Плавно закрываем модальное окно бонусов
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+
+    // Опционально: если у тебя подключен Telegram WebApp SDK, можно показать нативное уведомление
+    if (window.Telegram?.WebApp?.showAlert) {
+        window.Telegram.WebApp.showAlert(`Успешно получена награда Дня ${currentStreak}!`);
+    }
+};
+
+/**
+ * Вспомогательная функция сохранения прогресса бонусов в память
+ */
+window.saveDailyState = function() {
+    localStorage.setItem('tg_clicker_daily', JSON.stringify(window.dailyRewardState));
+};
+
+// АВТОЗАПУСК: Вызываем проверку бонуса автоматически через 500мс после загрузки скрипта,
+// чтобы дождаться инициализации основного состояния игры (gameState)
+setTimeout(() => {
+    if (typeof window.checkDailyReward === 'function') {
+        window.checkDailyReward();
+    }
+}, 500);

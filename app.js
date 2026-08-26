@@ -10,7 +10,7 @@ window.gameState = {
         EUR: 0.92,
         RUB: 90
     },
-    cryptoPrice: 50000 
+    cryptoPrice: 500000 
 };
 
 // ==========================================
@@ -495,15 +495,15 @@ window.getTelegramUserName = function() {
     return "Игрок (Браузер)";
 };
 
-// НАДЕЖНАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ СОЗДАНИЯ КЛАНА (БЕЗ ВНЕШНИХ ЗАВИСИМОСТЕЙ)
+// НАДЕЖНАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ СОЗДАНИЯ КЛАНА (СТОИМОСТЬ В КРИПТЕ: 50 BTC)
 window.createClan = function(clanName) {
     if (!clanName || clanName.trim() === "") {
         alert("Пожалуйста, введите название клана!");
         return false;
     }
     
-    // Прямо здесь жестко прописываем цену и базовую структуру, если ее забыл создать браузер
-    const createPrice = 1000000000; // 1 миллиард USD
+    // === МЕНЯЕМ ЦЕНУ: 50 BTC для создания клана ===
+    const createPriceBtc = 50; 
     
     // Проверяем и создаем clanState, если его нет
     if (!window.clanState) {
@@ -516,20 +516,24 @@ window.createClan = function(clanName) {
         };
     }
     
-    // Проверяем и создаем clanConfig на будущее, чтобы другие функции тоже не ломались
+    // Проверяем и создаем clanConfig на будущее
     if (!window.clanConfig) {
         window.clanConfig = {
-            createPrice: 1000000000,
+            createPrice: 50, // Обновили цену и в конфиге на будущее
             baseUpgradePrice: 2000000000,
             priceMultiplier: 1.7,
             bonusPerLevel: 0.05
         };
     }
 
-    // Проверяем наличие денег на балансе gameState
-    if (window.gameState && typeof window.gameState.balance !== 'undefined') {
-        if (window.gameState.balance >= createPrice) {
-            window.gameState.balance -= createPrice;
+    // === ПРОВЕРЯЕМ НАЛИЧИЕ КРИПТО-БАЛАНСА В ИГРЕ ===
+    if (window.gameState && typeof window.gameState.cryptoBalance !== 'undefined') {
+        
+        // Сравниваем баланс BTC игрока с ценой в 50 BTC
+        if (window.gameState.cryptoBalance >= createPriceBtc) {
+            
+            // Списываем 50 BTC с крипто-баланса
+            window.gameState.cryptoBalance -= createPriceBtc;
             
             // Записываем данные созданного клана
             window.clanState.hasClan = true;
@@ -545,14 +549,16 @@ window.createClan = function(clanName) {
             alert(`Клан "${clanName}" успешно создан!`);
             return true;
         } else {
-            alert("Недостаточно денег для создания клана! Требуется 1 000 000 000 USD");
+            // Исправили текст ошибки, чтобы он сообщал точную цену в крипте
+            alert("Недостаточно Биткоинов для создания клана! Требуется 50 BTC");
             return false;
         }
     } else {
-        alert("Ошибка архитектуры: Не найден баланс игры window.gameState.balance");
+        alert("Ошибка архитектуры: Не найден баланс игры window.gameState.cryptoBalance");
         return false;
     }
 };
+
 
 
 // ПОЛНОСТЬЮ АВТОНОМНАЯ ФУНКЦИЯ ИЗМЕНЕНИЯ ЦЕНЫ ВХОДА

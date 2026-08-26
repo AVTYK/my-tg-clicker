@@ -61,16 +61,112 @@ body {
     background: linear-gradient(135deg, #00ff88 0%, #00aa50 100%); color: #000; border: none;
 }
 
-/* МОНЕТА — ДОБАВЛЕН ВИЗУАЛЬНЫЙ СТИЛЬ */
-.click-area { margin: 30px 0; width: 100%; display: flex; justify-content: center; position: relative;}
-#click-btn {
-    background: radial-gradient(circle, #ffe066 0%, #f5b041 100%); 
-    border: 6px solid rgba(255, 255, 255, 0.1);
-    font-size: 4.5rem; cursor: pointer; border-radius: 50%; width: 180px; height: 180px;
-    display: flex; align-items: center; justify-content: center; animation: pulse 3s infinite;
-    box-shadow: 0 0 30px rgba(245, 176, 65, 0.4);
-    outline: none;
+/* 1. Контейнер кликера — сохраняем твои отступы, но добавляем 3D-глубину */
+.click-area {
+    margin: 30px 0; 
+    width: 100%; 
+    display: flex; 
+    justify-content: center; 
+    position: relative;
+    perspective: 1000px; /* Критически важно для 3D-наклона монеты! */
 }
+
+/* 2. Сама кнопка-кликер — теперь она имеет фиксированные размеры и аппаратное ускорение */
+#click-btn {
+    background: none; /* Убираем старый фон, так как теперь тело монеты внутри */
+    border: none; /* Убираем старую рамку */
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent; /* Убираем синюю вспышку на мобилках */
+    
+    /* Сохраняем твои размеры из старого кода — 180px на 180px */
+    width: 180px; 
+    height: 180px;
+    display: block;
+    position: relative;
+    
+    transform-style: preserve-3d; /* Разрешаем 3D внутри кнопки */
+    /* Плавный возврат монеты в ровное положение после отпускания пальца */
+    transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+    
+    /* Твоя плавная пульсация */
+    animation: pulse 3s infinite; 
+    
+    /* Ультра-четкость: заставляем видеокарту рендерить пульсацию без дрожания краев */
+    will-change: transform;
+    transform: translateZ(0); 
+}
+
+/* 3. Внешнее тело монеты (золотой градиент и тень) */
+.coin-body {
+    width: 100%; /* Занимает все 180px кнопки */
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffe066 0%, #f5b041 50%, #c0392b 100%);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Обрезаем блик, чтобы он не летал по экрану */
+    
+    /* Сохраняем твою сочную светящуюся ауру вокруг монеты */
+    box-shadow: 
+        0 12px 25px rgba(0, 0, 0, 0.6), 
+        0 0 30px rgba(245, 176, 65, 0.4); 
+}
+
+/* 4. Внутренний кантик монеты для создания эффекта чеканки */
+.coin-inner {
+    width: 156px; /* Чуть меньше основы для красивого ободка */
+    height: 156px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f5b041 0%, #f39c12 100%);
+    border: 3px dashed #fcd116; /* Аккуратный чеканный ободок */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4); /* Внутренний объем */
+}
+
+/* 5. Символ доллара — фиксируем идеальную четкость */
+#coin-symbol {
+    font-size: 64px; /* Оптимальный крупный размер под монету 180px */
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 2px 4px 6px rgba(0, 0, 0, 0.5);
+    user-select: none;
+    
+    /* Аппаратное ускорение против размытия букв при пульсации */
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* 6. Эффект бегущего блика раз в 4 секунды */
+.coin-body::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(45deg);
+    animation: coinShine 4s infinite linear;
+}
+
+/* Анимация бегущего блика */
+@keyframes coinShine {
+    0% { left: -150%; }
+    10% { left: 150%; }
+    100% { left: 150%; }
+}
+
 #click-btn:active { transform: scale(0.92); }
 @keyframes pulse {
     0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255,170,0,0.4)); }

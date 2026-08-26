@@ -312,6 +312,7 @@ h2 { font-size: 0.95rem; color: #ffd700; text-transform: uppercase; letter-spaci
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
     /* Объемная тень снизу + мягкое пульсирующее золотое свечение вокруг */
     box-shadow: 
         0 15px 30px rgba(0, 0, 0, 0.7), 

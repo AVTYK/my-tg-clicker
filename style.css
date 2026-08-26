@@ -71,36 +71,32 @@ body {
     perspective: 1000px; /* Критически важно для 3D-наклона монеты! */
 }
 
-/* 2. Сама кнопка-кликер — теперь она имеет фиксированные размеры и аппаратное ускорение */
+/* 2. Сама кнопка-кликер — теперь анимация пульсации ЕЙ НЕ МЕШАЕТ наклоняться */
 #click-btn {
-    background: none; /* Убираем старый фон, так как теперь тело монеты внутри */
-    border: none; /* Убираем старую рамку */
+    background: none; 
+    border: none; 
     padding: 0;
     cursor: pointer;
     outline: none;
-    -webkit-tap-highlight-color: transparent; /* Убираем синюю вспышку на мобилках */
+    -webkit-tap-highlight-color: transparent;
     
-    /* Сохраняем твои размеры из старого кода — 180px на 180px */
     width: 180px; 
     height: 180px;
     display: block;
     position: relative;
     
-    transform-style: preserve-3d; /* Разрешаем 3D внутри кнопки */
-    /* Плавный возврат монеты в ровное положение после отпускания пальца */
+    transform-style: preserve-3d; 
     transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
     
-    /* Твоя плавная пульсация */
-    animation: pulse 3s infinite; 
+    /* Мы убрали отсюда строчку animation: pulse 3s infinite; */
     
-    /* Ультра-четкость: заставляем видеокарту рендерить пульсацию без дрожания краев */
     will-change: transform;
     transform: translateZ(0); 
 }
 
-/* 3. Внешнее тело монеты (золотой градиент и тень) */
+/* 3. Внешнее тело монеты — ТЕПЕРЬ ПУЛЬСИРУЕТ ОНО, внутри кнопки */
 .coin-body {
-    width: 100%; /* Занимает все 180px кнопки */
+    width: 100%; 
     height: 100%;
     border-radius: 50%;
     background: linear-gradient(135deg, #ffe066 0%, #f5b041 50%, #c0392b 100%);
@@ -108,13 +104,16 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden; /* Обрезаем блик, чтобы он не летал по экрану */
+    overflow: hidden; 
     
-    /* Сохраняем твою сочную светящуюся ауру вокруг монеты */
+    /* === ДОБАВИЛИ СТРОЧКУ СЮДА: монета пульсирует, не мешая наклонам кнопки === */
+    animation: pulse 3s infinite; 
+
     box-shadow: 
         0 12px 25px rgba(0, 0, 0, 0.6), 
         0 0 30px rgba(245, 176, 65, 0.4); 
 }
+
 
 /* 4. Внутренний кантик монеты для создания эффекта чеканки */
 .coin-inner {

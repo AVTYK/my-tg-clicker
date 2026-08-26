@@ -264,3 +264,14 @@ h2 { font-size: 0.95rem; color: #ffd700; text-transform: uppercase; letter-spaci
     background-color: #ff3b30;
     border-radius: 50%;
 }
+
+/* Красная точка для карточки конкретного пассивного дохода */
+.upgrade-item-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #ff3b30; /* Яркий красный цвет */
+    border-radius: 50%; /* Превращаем квадрат в круг */
+    margin-left: 6px; /* Отступ слева, чтобы точка не слипалась с текстом цены */
+    vertical-align: middle; /* Выравниваем точку ровно по центру текста цены */
+}

@@ -93,6 +93,9 @@ window.updateUI = function() {
         const levelEl = document.getElementById("upgrade-level-" + id);
         const priceEl = document.getElementById("upgrade-price-" + id);
         
+        // НАХОДИМ НАШУ НОВУЮ КРАСНУЮ ТОЧКУ ДЛЯ КОНКРЕТНОЙ КАРТОЧКИ
+        const itemDotEl = document.getElementById("upgrade-dot-" + id);
+        
         if (levelEl) {
             levelEl.innerText = "Lvl " + upgrade.level;
         }
@@ -101,13 +104,33 @@ window.updateUI = function() {
         }
 
         // ==========================================
-        // НАША НОВАЯ ПРОВЕРКА БАЛАНСА
+        // УМНАЯ ПРОВЕРКА ДЛЯ КАЖДОГО ДОХОДА
         // ==========================================
-        // Если баланса игрока хватает на покупку ТЕКУЩЕГО перебираемого апгрейда
+        // Если общего баланса игрока хватает на покупку ИМЕННО ЭТОГО апгрейда
         if (window.gameState.balance >= currentPrice) {
-            canAffordAnyUpgrade = true; // Фиксируем, что игроку хватает денег хотя бы на один апгрейд
+            canAffordAnyUpgrade = true; // Флаг для шторки меню
+            
+            // Включаем красную точку на кнопке конкретного апгрейда
+            if (itemDotEl) {
+                itemDotEl.style.display = 'inline-block';
+            }
+        } else {
+            // Если денег на этот конкретный апгрейд не хватает — выключаем точку у него
+            if (itemDotEl) {
+                itemDotEl.style.display = 'none';
+            }
         }
     }
+
+    // После того как цикл проверил все 10 апгрейдов:
+    if (canAffordAnyUpgrade) {
+        // Если денег хватает хотя бы на один доступный апгрейд — зажигаем красную точку в МЕНЮ!
+        window.toggleItemMenuDot('tab-upgrades', true);
+    } else {
+        // Если после покупок денег вообще ни на один апгрейд не осталось — тушим точку в МЕНЮ
+        window.toggleItemMenuDot('tab-upgrades', false);
+    }
+
 
     // После того как цикл проверил все 10 апгрейдов:
     if (canAffordAnyUpgrade) {

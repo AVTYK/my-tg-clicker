@@ -821,3 +821,5 @@ function toggleItemMenuDot(tabId, show) {
     }
 }
 
+// Временный тест: зажигаем точку во вкладке Апгрейды
+toggleItemMenuDot('tab-upgrades', true);

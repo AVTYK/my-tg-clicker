@@ -262,20 +262,52 @@ window.playCasino = function(betAmount) {
     window.saveGame();
 };
 
+// Переменная для хранения введенного объема (по умолчанию 0.01)
+window.currentTradingVolume = 0.01;
+
+/**
+ * Функция отслеживания ручного ввода объема BTC игроком
+ */
+window.handleTradingVolumeInput = function(value) {
+    let amount = parseFloat(value) || 0;
+    if (amount < 0.0001) amount = 0.0001; // Защита от нулевых и отрицательных ставок
+    window.currentTradingVolume = amount;
+};
+
+/**
+ * ОБНОВЛЕННАЯ ФУНКЦИЯ ТОРГОВЛИ (ДИНАМИЧЕСКИЙ ОБЪЕМ СДЕЛКИ)
+ */
 window.tradeCrypto = function(action) {
-    const tradeVolume = 0.01;
+    // 1. Считываем актуальное количество BTC из поля ввода прямо в момент клика
+    const inputEl = document.getElementById('trading-btc-input');
+    if (inputEl) {
+        window.currentTradingVolume = parseFloat(inputEl.value) || 0.01;
+    }
+
+    const tradeVolume = window.currentTradingVolume;
+    
+    // Защита: если игрок стер поле и нажал кнопку
+    if (tradeVolume <= 0) {
+        const statusEl = document.getElementById('exchange-status');
+        if (statusEl) statusEl.innerText = "Введите корректное число BTC!";
+        return;
+    }
+
+    // 2. Считаем точную стоимость сделки на основе курса (500 000 USD за 1 BTC)
     const costInUSD = window.gameState.cryptoPrice * tradeVolume;
     const statusEl = document.getElementById('exchange-status');
 
     if (action === 'buy') {
+        // Проверяем обычные доллары
         if (window.gameState.balance >= costInUSD) {
             window.gameState.balance -= costInUSD;
             window.gameState.cryptoBalance += tradeVolume;
             if (statusEl) statusEl.innerText = "Куплено " + tradeVolume + " BTC";
         } else {
-            if (statusEl) statusEl.innerText = "Недостаточно USD!";
+            if (statusEl) statusEl.innerText = "Недостаточно USD! Нужно " + costInUSD.toFixed(0) + " $";
         }
     } else if (action === 'sell') {
+        // Проверяем наличие Биткоинов
         if (window.gameState.cryptoBalance >= tradeVolume) {
             window.gameState.cryptoBalance -= tradeVolume;
             window.gameState.balance += costInUSD;
@@ -284,9 +316,12 @@ window.tradeCrypto = function(action) {
             if (statusEl) statusEl.innerText = "Недостаточно BTC на балансе!";
         }
     }
+    
+    // Твои родные функции обновления экрана и сохранения игры
     window.updateUI();
     window.saveGame();
 };
+
 
 window.startLaborShift = function() {
     const clickPower = window.calculateClickPower();

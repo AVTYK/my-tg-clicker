@@ -198,16 +198,35 @@
             <section class="exchange-section">
                 <h2>Криптобиржа</h2>
                 <div class="ticker-card">
-                    <div id="live-rate">$50,000</div>
+                    <div id="live-rate">$500,000</div>
                     <div class="ticker-sub">Текущий курс BTC/USD (Обновление каждые 3 секунды)</div>
                     
-                    <div class="exchange-form">
-                        <div class="exchange-actions">
-                            <button class="action-btn buy" onclick="window.tradeCrypto('buy')">Купить 0.01 BTC</button>
-                            <button class="action-btn sell" onclick="window.tradeCrypto('sell')">Продать 0.01 BTC</button>
+                                        <div class="exchange-form">
+                        <!-- 1. НОВОЕ ПОЛЕ ДЛЯ ВВОДА КОЛИЧЕСТВА BTC -->
+                        <div class="trading-volume-container" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <label for="trading-btc-input" style="color: #e5e5ea; font-size: 15px;">Количество BTC:</label>
+                            <input 
+                                type="number" 
+                                id="trading-btc-input" 
+                                placeholder="Сумма..." 
+                                min="0.0001" 
+                                step="0.0001"
+                                value="0.01" 
+                                oninput="window.handleTradingVolumeInput(this.value)"
+                                style="background-color: #1c1c1e; color: #ffffff; border: 1px solid #2c2c2e; border-radius: 8px; padding: 8px 12px; font-size: 16px; width: 120px; outline: none; box-sizing: border-box;"
+                            />
                         </div>
+
+                        <!-- 2. ДВЕ ГЛАВНЫЕ КНОПКИ СДЕЛКИ -->
+                        <div class="exchange-actions">
+                            <button class="action-btn buy" onclick="window.tradeCrypto('buy')">Купить BTC</button>
+                            <button class="action-btn sell" onclick="window.tradeCrypto('sell')">Продать BTC</button>
+                        </div>
+                        
+                        <!-- Сохраняем твое поле статуса сделки -->
                         <div id="exchange-status">Готов к торгам</div>
                     </div>
+
                 </div>
             </section>
         </main>

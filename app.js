@@ -775,3 +775,49 @@ menuItems.forEach(item => {
     });
 });
 
+// ==========================================
+// УПРАВЛЕНИЕ ИНДИКАТОРАМИ (КРАСНЫМИ ТОЧКАМИ)
+// ==========================================
+
+/**
+ * Функция для управления красной точкой на главной кнопке МЕНЮ
+ * @param {boolean} show - true, чтобы показать точку; false, чтобы скрыть
+ */
+function toggleMainMenuDot(show) {
+    const mainDot = document.getElementById('menu-notification-dot');
+    if (mainDot) {
+        mainDot.style.display = show ? 'block' : 'none';
+    }
+}
+
+/**
+ * Функция для управления красной точкой внутри конкретного пункта меню
+ * @param {string} tabId - ID вкладки (например: 'tab-upgrades', 'tab-referrals', 'tab-casino')
+ * @param {boolean} show - true, чтобы показать точку; false, чтобы скрыть
+ */
+function toggleItemMenuDot(tabId, show) {
+    // Находим нужный элемент списка по атрибуту onclick, который мы прописали в HTML
+    const menuItem = document.querySelector(`.menu-item[onclick*="${tabId}"]`);
+    if (menuItem) {
+        const itemDot = menuItem.querySelector('.item-dot');
+        if (itemDot) {
+            itemDot.style.display = show ? 'block' : 'none';
+        }
+    }
+    
+    // Автоматически обновляем главную кнопку: если внутри шторки горит ХОТЯ БЫ ОДНА точка,
+    // то на главной кнопке МЕНЮ тоже должна гореть красная точка.
+    if (show) {
+        toggleMainMenuDot(true);
+    } else {
+        // Проверяем, остались ли еще горящие точки внутри меню
+        const anyDotsLeft = Array.from(document.querySelectorAll('.item-dot'))
+            .some(dot => dot.style.display === 'block');
+        
+        // Если больше горящих точек нет, тушим точку и на главной кнопке
+        if (!anyDotsLeft) {
+            toggleMainMenuDot(false);
+        }
+    }
+}
+

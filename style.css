@@ -617,9 +617,10 @@ h2 { font-size: 0.95rem; color: #ffd700; text-transform: uppercase; letter-spaci
     box-sizing: border-box;
 }
 
-/* 5. ГЛАВНАЯ КНОПКА ЗАПУСКА */
+/* 5. ГЛАВНАЯ КНОПКА ЗАПУСКА — ИСПРАВЛЕННЫЙ ВАРИАНТ */
 .casino-main-spin-btn {
-    background-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    /* === ИСПРАВИЛИ СТРОКУ ТУТ: заменили background-gradient на просто background === */
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
     background-color: #27ae60;
     color: #ffffff;
     border: none;
@@ -634,6 +635,7 @@ h2 { font-size: 0.95rem; color: #ffd700; text-transform: uppercase; letter-spaci
     transition: transform 0.1s ease, background-color 0.2s ease;
     -webkit-tap-highlight-color: transparent;
 }
+
 
 .casino-main-spin-btn:active {
     transform: scale(0.98);

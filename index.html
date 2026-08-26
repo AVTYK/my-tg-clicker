@@ -196,39 +196,82 @@
         <!-- ВКЛАДКА 3: ТРЕЙДИНГ -->
         <main id="tab-crypto" class="tab-content">
             <section class="exchange-section">
-                <h2>Криптобиржа</h2>
-                <div class="ticker-card">
-                    <div id="live-rate">$500,000</div>
-                    <div class="ticker-sub">Текущий курс BTC/USD (Обновление каждые 3 секунды)</div>
-                    
-                                        <div class="exchange-form">
-                        <!-- 1. НОВОЕ ПОЛЕ ДЛЯ ВВОДА КОЛИЧЕСТВА BTC -->
-                        <div class="trading-volume-container" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                            <label for="trading-btc-input" style="color: #e5e5ea; font-size: 15px;">Количество BTC:</label>
-                            <input 
-                                type="number" 
-                                id="trading-btc-input" 
-                                placeholder="Сумма..." 
-                                min="0.0001" 
-                                step="0.0001"
-                                value="0.01" 
-                                oninput="window.handleTradingVolumeInput(this.value)"
-                                style="background-color: #1c1c1e; color: #ffffff; border: 1px solid #2c2c2e; border-radius: 8px; padding: 8px 12px; font-size: 16px; width: 120px; outline: none; box-sizing: border-box;"
-                            />
-                        </div>
+    <h2>Криптобиржа</h2>
+    
+    <!-- 1. НОВЫЕ ПЕРЕКЛЮЧАТЕЛИ (ПОД-ТАБЫ) -->
+    <div class="trading-sub-tabs" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+        <button id="sub-tab-spot" class="sub-tab-btn active" onclick="window.switchTradingSubTab('spot')" style="background-color: #2481cc; color: #ffffff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer;">Спот</button>
+        <button id="sub-tab-futures" class="sub-tab-btn" onclick="window.switchTradingSubTab('futures')" style="background-color: #1c1c1e; color: #aeaea3; border: 1px solid #2c2c2e; border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: bold; cursor: pointer;">Фьючерсы</button>
+    </div>
 
-                        <!-- 2. ДВЕ ГЛАВНЫЕ КНОПКИ СДЕЛКИ -->
-                        <div class="exchange-actions">
-                            <button class="action-btn buy" onclick="window.tradeCrypto('buy')">Купить BTC</button>
-                            <button class="action-btn sell" onclick="window.tradeCrypto('sell')">Продать BTC</button>
-                        </div>
-                        
-                        <!-- Сохраняем твое поле статуса сделки -->
-                        <div id="exchange-status">Готов к торгам</div>
-                    </div>
-
+    <div class="ticker-card">
+        <!-- Твой живой курс BTC/USD (Общий для обоих режимов) -->
+        <div id="live-rate">$500,000</div>
+        <div class="ticker-sub">Текущий курс BTC/USD (Обновление каждые 3 секунды)</div>
+        
+        <!-- ======================================================== -->
+        <!-- ПОД-ВКЛАДКА А: СПОТ (Твоя готовая классическая торговля) -->
+        <!-- ======================================================== -->
+        <div id="trading-content-spot" class="trading-sub-content">
+            <div class="exchange-form" style="margin-top: 15px;">
+                <div class="trading-volume-container" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <label for="trading-btc-input" style="color: #e5e5ea; font-size: 15px;">Количество BTC:</label>
+                    <input 
+                        type="number" 
+                        id="trading-btc-input" 
+                        placeholder="Сумма..." 
+                        min="0.0001" 
+                        step="0.0001"
+                        value="0.01" 
+                        oninput="window.handleTradingVolumeInput(this.value)"
+                        style="background-color: #1c1c1e; color: #ffffff; border: 1px solid #2c2c2e; border-radius: 8px; padding: 8px 12px; font-size: 16px; width: 120px; outline: none; box-sizing: border-box;"
+                    />
                 </div>
-            </section>
+
+                <div class="exchange-actions">
+                    <button class="action-btn buy" onclick="window.tradeCrypto('buy')">Купить BTC</button>
+                    <button class="action-btn sell" onclick="window.tradeCrypto('sell')">Продать BTC</button>
+                </div>
+                <div id="exchange-status">Готов к торгам</div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- ПОД-ВКЛАДКА Б: ФЬЮЧЕРСЫ (Новая игра Выше/Ниже с графиком) -->
+        <!-- ======================================================== -->
+        <div id="trading-content-futures" class="trading-sub-content" style="display: none; margin-top: 15px;">
+            
+            <!-- Живой линейный график (HTML5 Canvas) -->
+            <div class="chart-wrapper" style="position: relative; width: 100%; height: 150px; background-color: #121212; border: 1px solid #2c2c2e; border-radius: 12px; overflow: hidden; margin-bottom: 15px;">
+                <canvas id="futures-chart" style="width: 100%; height: 100%; display: block;"></canvas>
+                <!-- Визуальный таймер раунда поверх графика -->
+                <div id="futures-timer" style="position: absolute; top: 10px; right: 10px; background-color: rgba(0,0,0,0.6); color: #ffe066; padding: 4px 8px; border-radius: 6px; font-size: 14px; font-weight: bold; display: none;">15s</div>
+            </div>
+
+            <!-- Выбор суммы ставки на раунд -->
+            <div class="futures-bet-container" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <label for="futures-bet-input" style="color: #e5e5ea; font-size: 15px;">Ставка ($):</label>
+                <input 
+                    type="number" 
+                    id="futures-bet-input" 
+                    value="1000" 
+                    min="10"
+                    style="background-color: #1c1c1e; color: #ffffff; border: 1px solid #2c2c2e; border-radius: 8px; padding: 8px 12px; font-size: 16px; width: 120px; outline: none; box-sizing: border-box;"
+                />
+            </div>
+
+            <!-- Две главные кнопки прогноза -->
+            <div class="exchange-actions" style="display: flex; gap: 10px;">
+                <button class="action-btn buy" id="futures-up-btn" onclick="window.startFuturesTrade('up')" style="width: 100%;">🟢 ВЫШЕ</button>
+                <button class="action-btn sell" id="futures-down-btn" onclick="window.startFuturesTrade('down')" style="width: 100%;">🔴 НИЖЕ</button>
+            </div>
+            
+            <div id="futures-status" style="margin-top: 10px; font-size: 14px; color: #aeaea3;">Выберите направление и время</div>
+        </div>
+
+    </div>
+</section>
+
         </main>
 
         <!-- НОВАЯ ВКЛАДКА: ТОП ЛИДЕРОВ -->

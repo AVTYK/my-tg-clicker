@@ -1294,3 +1294,56 @@ setTimeout(() => {
         window.checkDailyReward();
     }
 }, 500);
+
+
+// ========================================================
+// ПЕРЕКЛЮЧЕНИЕ ПОД-ВКЛАДОК ТРЕЙДИНГА (СПОТ / ФЬЮЧЕРСЫ)
+// ========================================================
+
+/**
+ * Функция переключения под-режимов биржи
+ * @param {string} subTab - 'spot' или 'futures'
+ */
+window.switchTradingSubTab = function(subTab) {
+    const btnSpot = document.getElementById('sub-tab-spot');
+    const btnFutures = document.getElementById('sub-tab-futures');
+    const contentSpot = document.getElementById('trading-content-spot');
+    const contentFutures = document.getElementById('trading-content-futures');
+
+    if (!btnSpot || !btnFutures || !contentSpot || !contentFutures) return;
+
+    if (subTab === 'spot') {
+        // Активируем кнопку Спот
+        btnSpot.style.backgroundColor = '#2481cc';
+        btnSpot.style.color = '#ffffff';
+        btnSpot.style.border = 'none';
+
+        // Деактивируем кнопку Фьючерсы
+        btnFutures.style.backgroundColor = '#1c1c1e';
+        btnFutures.style.color = '#aeaea3';
+        btnFutures.style.border = '1px solid #2c2c2e';
+
+        // Показываем Спот, скрываем Фьючерсы
+        contentSpot.style.display = 'block';
+        contentFutures.style.display = 'none';
+    } else if (subTab === 'futures') {
+        // Активируем кнопку Фьючерсы
+        btnFutures.style.backgroundColor = '#2481cc';
+        btnFutures.style.color = '#ffffff';
+        btnFutures.style.border = 'none';
+
+        // Деактивируем кнопку Спот
+        btnSpot.style.backgroundColor = '#1c1c1e';
+        btnSpot.style.color = '#aeaea3';
+        btnSpot.style.border = '1px solid #2c2c2e';
+
+        // Показываем Фьючерсы, скрываем Спот
+        contentSpot.style.display = 'none';
+        contentFutures.style.display = 'block';
+        
+        // Маленький хак: принудительно перерисовываем график, если он инициализирован
+        if (typeof window.resizeFuturesChart === 'function') {
+            window.resizeFuturesChart();
+        }
+    }
+};

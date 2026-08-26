@@ -222,20 +222,61 @@
             </section>
         </main>
 
-        <!-- ВКЛАДКА 4: КАЗИНО -->
-        <main id="tab-casino" class="tab-content">
-            <section class="casino-section">
-                <h2>Казино "Удача Богача"</h2>
-                <div class="casino-card">
-                    <div id="casino-result">Сделайте вашу ставку</div>
-                    <div class="bet-buttons">
-                        <button class="bet-btn" onclick="window.playCasino(10)">10 USD</button>
-                        <button class="bet-btn" onclick="window.playCasino(50)">50 USD</button>
-                        <button class="bet-btn" onclick="window.playCasino(100)">100 USD</button>
-                    </div>
-                </div>
-            </section>
-        </main>
+        <!-- ВКЛАДКА: КАЗИНО РУЛЕТКА -->
+<main id="tab-casino" class="tab-content">
+    <section class="casino-section">
+        <h2>Крипто Рулетка</h2>
+
+        <!-- 1. ВИЗУАЛЬНЫЙ БАРАБАН РУЛЕТКИ (БЕГУЩАЯ ЛЕНТА) -->
+        <div class="roulette-wrapper">
+            <!-- Прицел по центру, который показывает выигрышный сектор -->
+            <div class="roulette-pointer"></div>
+            <!-- Сама длинная лента с цветными ячейками, которую мы будем двигать через JS -->
+            <div id="roulette-tape" class="roulette-tape"></div>
+        </div>
+
+        <!-- Поле для вывода текстового результата (твое старое поле, сохраняем ID) -->
+        <p id="casino-result" class="casino-status">Выберите цвет и сделайте ставку</p>
+
+        <!-- 2. КНОПКИ ВЫБОРА ИСХОДА (🔴 / 🟢 / ⚫) -->
+        <div class="casino-color-selector">
+            <button id="choice-red" class="color-btn red-btn" onclick="window.selectCasinoColor('red')">🔴 x2</button>
+            <button id="choice-zero" class="color-btn zero-btn" onclick="window.selectCasinoColor('zero')">🟢 x14</button>
+            <button id="choice-black" class="color-btn black-btn" onclick="window.selectCasinoColor('black')">⚫ x2</button>
+        </div>
+
+        <!-- 3. БЛОК СТАНДАРТНЫХ СТАВОК (8 КНОПОК) -->
+        <div class="casino-bet-presets">
+            <button class="bet-preset-btn" onclick="window.setCasinoPresetBet(10)">10 $</button>
+            <button class="bet-preset-btn" onclick="window.setCasinoPresetBet(50)">50 $</button>
+            <button class="bet-preset-btn" onclick="window.setCasinoPresetBet(100)">100 $</button>
+            <button class="bet-preset-btn" onclick="window.setCasinoPresetBet(500)">500 $</button>
+            <button class="bet-preset-btn" onclick="window.setCasinoPresetBet(1000)">1k $</button>
+            <button class="bet-preset-btn" onclick="window.setCasinoPresetBet(20000)">20k $</button>
+            <button class="bet-preset-btn" onclick="window.setCasinoPresetBet(100000)">100k $</button>
+            <button class="bet-preset-btn" onclick="window.setCasinoPresetBet(1000000)">1M $</button>
+        </div>
+
+        <!-- 4. ПОЛЕ ДЛЯ РУЧНОГО ВВОДА СТАВКИ -->
+        <div class="custom-bet-container">
+            <label for="casino-custom-bet">Ваша ставка:</label>
+            <input 
+                type="number" 
+                id="casino-custom-bet" 
+                placeholder="Сумма..." 
+                min="1"
+                value="10"
+                oninput="window.handleCasinoCustomBet(this.value)"
+            />
+        </div>
+
+        <!-- 5. ГЛАВНАЯ КНОПКА ЗАПУСКА -->
+        <button id="casino-spin-btn" class="casino-main-spin-btn" onclick="window.startRouletteSpin()">
+            КРУТИТЬ!
+        </button>
+    </section>
+</main>
+
 
 
         <!-- ВКЛАДКА 5: РЕФЕРАЛЫ -->

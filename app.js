@@ -910,3 +910,192 @@ if (clickBtn) {
         clickBtn.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
     });
 }
+
+// ==========================================
+// ЛОГИКА СОВРЕМЕННОЙ КРИПТО-РУЛЕТКИ
+// ==========================================
+
+// Состояние рулетки: храним текущую ставку и выбранный цвет
+window.casinoState = {
+    currentBet: 10,
+    selectedColor: null, // Может быть 'red', 'black', 'zero'
+    isSpinning: false
+};
+
+// Порядок цветов на ленте (повторяющийся цикл для честности)
+const roulettePattern = ['red', 'black', 'red', 'black', 'red', 'black', 'zero', 'black', 'red', 'black', 'red', 'black', 'red', 'black'];
+let fullTapeCells = []; // Сюда сгенерируем длинную ленту (около 80 ячеек)
+
+/**
+ * 1. Генерация ячеек внутри ленты при старте
+ */
+function initRouletteTape() {
+    const tapeEl = document.getElementById('roulette-tape');
+    if (!tapeEl) return;
+
+    tapeEl.innerHTML = ''; // Очищаем старое
+    fullTapeCells = [];
+
+    // Генерируем длинную ленту из 84 ячеек, чтобы было куда крутить
+    for (let i = 0; i < 6; i++) {
+        roulettePattern.forEach((color, index) => {
+            const cell = document.createElement('div');
+            cell.className = `roulette-cell cell-${color}`;
+            
+            // Ставим красивые эмодзи внутрь ячеек
+            if (color === 'red') cell.innerText = '🔴';
+            if (color === 'black') cell.innerText = '⚫';
+            if (color === 'zero') cell.innerText = '🟢';
+            
+            tapeEl.appendChild(cell);
+            fullTapeCells.push(color); // Запоминаем цвет каждой ячейки по порядку
+        });
+    }
+    // Возвращаем ленту в начальное положение (смещение 0)
+    tapeEl.style.transition = 'none';
+    tapeEl.style.transform = 'translateX(0px)';
+}
+
+// Запускаем генерацию сразу при загрузке скрипта
+setTimeout(initRouletteTape, 100);
+
+
+/**
+ * 2. Выбор цвета (🔴 / 🟢 / ⚫)
+ */
+window.selectCasinoColor = function(color) {
+    if (window.casinoState.isSpinning) return; // Нельзя менять цвет во время кручения
+
+    window.casinoState.selectedColor = color;
+
+    // Убираем подсветку со всех трех кнопок
+    document.getElementById('choice-red').classList.remove('selected');
+    document.getElementById('choice-zero').classList.remove('selected');
+    document.getElementById('choice-black').classList.remove('selected');
+
+    // Подсвечиваем ту, которую нажал игрок
+    document.getElementById(`choice-${color}`).classList.add('selected');
+};
+
+
+/**
+ * 3. Быстрые кнопки ставок (10, 50, 100...)
+ */
+window.setCasinoPresetBet = function(amount) {
+    if (window.casinoState.isSpinning) return;
+
+    window.casinoState.currentBet = amount;
+    
+    // Синхронизируем с текстовым полем ввода
+    const inputEl = document.getElementById('casino-custom-bet');
+    if (inputEl) inputEl.value = amount;
+};
+
+
+/**
+ * 4. Ручной ввод ставки в текстовое поле
+ */
+window.handleCasinoCustomBet = function(value) {
+    if (window.casinoState.isSpinning) return;
+
+    let amount = parseInt(value) || 0;
+    if (amount < 1) amount = 1;
+    
+    window.casinoState.currentBet = amount;
+};
+
+
+/**
+ * 5. ГЛАВНЫЙ СТАРТ ВРАЩЕНИЯ РУЛЕТКИ
+ */
+window.startRouletteSpin = function() {
+    const statusEl = document.getElementById('casino-result');
+    const tapeEl = document.getElementById('roulette-tape');
+    const spinBtn = document.getElementById('casino-spin-btn');
+
+    // Проверка 1: выбран ли цвет
+    if (!window.casinoState.selectedColor) {
+        if (statusEl) statusEl.innerText = "Сначала выберите цвет! 🔴 🟢 ⚫";
+        return;
+    }
+
+    // Проверка 2: хватает ли денег
+    const bet = window.casinoState.currentBet;
+    if (window.gameState.balance < bet) {
+        if (statusEl) statusEl.innerText = "Недостаточно средств на балансе!";
+        return;
+    }
+
+    if (window.casinoState.isSpinning) return; // Защита от спама
+
+    // Блокируем интерфейс на время кручения
+    window.casinoState.isSpinning = true;
+    if (spinBtn) spinBtn.disabled = true;
+    if (statusEl) {
+        statusEl.innerText = "Ставки приняты, барабан крутится...";
+        statusEl.style.color = "#ffe066";
+    }
+
+    // Списываем ставку из твоего gameState
+    window.gameState.balance -= bet;
+    window.updateUI();
+
+    // Возвращаем ленту назад перед новым стартом, чтобы сбросить прошлый сдвиг
+    tapeEl.style.transition = 'none';
+    tapeEl.style.transform = 'translateX(0px)';
+
+    // Форсируем перерисовку браузера (микропауза 20мс)
+    setTimeout(() => {
+        // Случайным образом выбираем выигрышную ячейку в диапазоне от 50 до 70 (в конце ленты)
+        const cellWidth = 50; // Ширина одной ячейки из CSS
+        const wrapperWidth = 360; // Ширина рамки рулетки
+        const targetCellIndex = Math.floor(Math.random() * 20) + 50; 
+        
+        // Вытаскиваем, какой цвет реально победил в этой ячейке
+        const winningColor = fullTapeCells[targetCellIndex];
+
+        // Высчитываем точный сдвиг ленты в пикселях, чтобы ячейка встала по центру прицела
+        const targetOffset = -(targetCellIndex * cellWidth) + (wrapperWidth / 2) - (cellWidth / 2);
+
+        // Запускаем плавную CSS-анимацию прокрутки (длится 4 секунды)
+        tapeEl.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)';
+        tapeEl.style.transform = `translateX(${targetOffset}px)`;
+
+        // Ждем ровно 4 секунды, пока лента остановится, и подводим итоги
+        setTimeout(() => {
+            let isWin = false;
+            let multiplier = 2;
+
+            if (window.casinoState.selectedColor === 'zero' && winningColor === 'zero') {
+                isWin = true;
+                multiplier = 14; // За Зеро даем х14!
+            } else if (window.casinoState.selectedColor === winningColor) {
+                isWin = true; // Выпал Красный или Черный цвет игрока
+            }
+
+            if (isWin) {
+                const winAmount = bet * multiplier;
+                window.gameState.balance += winAmount; // Начисляем выигрыш
+                
+                if (statusEl) {
+                    statusEl.innerText = `Победа! 🎉 Выпало ${winningColor === 'red' ? 'КРАСНОЕ' : winningColor === 'black' ? 'ЧЕРНОЕ' : 'ЗЕРО'}. +${winAmount.toFixed(0)} USD`;
+                    statusEl.style.color = "#00ff88";
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.innerText = `Проигрыш! 😔 Выпало ${winningColor === 'red' ? 'КРАСНОЕ' : winningColor === 'black' ? 'ЧЕРНОЕ' : 'ЗЕРО'}. -${bet} USD`;
+                    statusEl.style.color = "#ff5500";
+                }
+            }
+
+            // Разблокируем интерфейс для новой игры
+            window.casinoState.isSpinning = false;
+            if (spinBtn) spinBtn.disabled = false;
+            
+            // Твои родные системные функции обновления UI и сохранения
+            window.updateUI();
+            if (typeof window.saveGame === 'function') window.saveGame();
+
+        }, 4000); // 4000мс = 4 секунды кручения барабана
+    }, 20);
+};

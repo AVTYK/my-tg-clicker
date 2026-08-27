@@ -1,26 +1,3 @@
-// ========================================================
-// ИНИЦИАЛИЗАЦИЯ ЖИВОЙ БАЗЫ ДАННЫХ FIREBASE ДЛЯ ТОП ЛИДЕРОВ
-// ========================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyBSRJKbCevSfdsJK3UGl-53BJEc18L7gcI",
-  authDomain: "crypto-tycoon-clicker.firebaseapp.com", // 🌟 ИСПРАВЛЕНО: добавлено название проекта
-  databaseURL: "https://crypto-tycoon-clicker-default-rtdb.europe-west1.firebasedatabase.app/",
-  projectId: "crypto-tycoon-clicker",
-  storageBucket: "crypto-tycoon-clicker.firebasestorage.app",
-  messagingSenderId: "376955245933",
-  appId: "1:376955245933:web:a25bf1e99f820098f13664",
-  measurementId: "G-BXL01QLKVL"
-};
-
-// Запускаем ядро Firebase в совместимом (compat) режиме
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
-// Создаем глобальный рабочий мостик к вашей Realtime Database
-window.db = firebase.database();
-
-
 // ==========================================
 // 1. СОСТОЯНИЕ ИГРЫ (STATE)
 // ==========================================

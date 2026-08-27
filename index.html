@@ -4,47 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tycoon & Labor Market</title>
-        <!-- ИСПРАВЛЕНО: Подключили API Telegram Web Apps -->
+    <!-- ИСПРАВЛЕНО: Подключили API Telegram Web Apps -->
     <script src="https://telegram.org"></script>
-    
-    <script type="module">
-  // 1. Импортируем ядро и БАЗУ ДАННЫХ (добавили getDatabase)
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-  import { getDatabase, ref, set, get, update, onValue } from "https://gstatic.com";
-
-  // 2. Ваша конфигурация (добавили строчку databaseURL)
-  const firebaseConfig = {
-    apiKey: "AIzaSyBSRJKbCevSfdsJK3UGl-53BJEc18L7gcI",
-    authDomain: "crypto-tycoon-clicker.firebaseapp.com",
-    projectId: "crypto-tycoon-clicker",
-    storageBucket: "crypto-tycoon-clicker.firebasestorage.app",
-    messagingSenderId: "376955245933",
-    appId: "1:376955245933:web:a25bf1e99f820098f13664",
-    measurementId: "G-BXL01QLKVL",
-    databaseURL: "  https://crypto-tycoon-clicker-default-rtdb.europe-west1.firebasedatabase.app/" // 🌟 Сюда добавили вашу ссылку
-  };
-
-  // 3. Инициализируем приложение
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-
-  // 4. СВЯЗУЮЩИЙ МОСТ (Чтобы функции из app.js имели доступ к базе)
-  window.database = database;
-  window.dbRef = ref;
-  window.dbSet = set;
-  window.dbGet = get;
-  window.dbUpdate = update;
-  window.dbOnValue = onValue;
-</script>
-
-<!-- Ваш файл app.js подключается СТРОГО ПОСЛЕ этого блока -->
-<script src="app.js"></script>
-
-
     <!-- ИСПРАВЛЕНО: Прямое подключение стилей без папки css -->
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <div class="game-container">
 

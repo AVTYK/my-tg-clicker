@@ -3,8 +3,8 @@
 // ========================================================
 const firebaseConfig = {
   apiKey: "AIzaSyBSRJKbCevSfdsJK3UGl-53BJEc18L7gcI",
-  authDomain: "://firebaseapp.com",
-  databaseURL: "https://firebaseio.com",
+  authDomain: "crypto-tycoon-clicker.firebaseapp.com", // 🌟 ИСПРАВЛЕНО: добавлено название проекта
+  databaseURL: "https://crypto-tycoon-clicker-default-rtdb.europe-west1.firebasedatabase.app/",
   projectId: "crypto-tycoon-clicker",
   storageBucket: "crypto-tycoon-clicker.firebasestorage.app",
   messagingSenderId: "376955245933",
